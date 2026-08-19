@@ -1,5 +1,6 @@
 /* Design philosophy: 午夜天文台 / Scientific Instrument Aesthetic. A true celestial sphere replaces the former flat viewport; controls remain edge-mounted and quiet. */
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation } from "wouter";
 import { Compass, Crosshair, Info, LocateFixed, MapPin, Minus, Moon, Plus, RotateCcw, Search, SunMedium, Telescope } from "lucide-react";
 import { SKY_DATA } from "@/data/skyData";
 
@@ -75,6 +76,7 @@ function getSolarObjects(date: Date) {
   });
 }
 
+const PLANET_IDS = new Set(["mercury", "venus", "mars", "jupiter", "saturn"]);
 const BODY_DETAILS: Record<string, { type: string; distance: string; magnitude: string; description: string }> = {
   sun: { type: "恒星 · G2V", distance: "1 AU", magnitude: "−26.74", description: "太阳系中心恒星，提供地球上绝大多数可见光与热量。观测模拟中以当前日期的近似黄经位置显示。" },
   moon: { type: "地球卫星", distance: "384,400 km", magnitude: "−12.7", description: "地球唯一的天然卫星。月球位置和亮度会随着观测时间变化，夜空中的大气散射也会受其影响。" },
@@ -95,6 +97,7 @@ const MESSIER_OBJECTS = [
 
 export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [, navigate] = useLocation();
   const drag = useRef({ active: false, moved: false, x: 0, y: 0, yaw: 0, pitch: 0 });
   const [active, setActive] = useState("ori");
   const [showLines, setShowLines] = useState(true);
@@ -303,7 +306,7 @@ export default function Home() {
       {showAtmosphere && <div className={`atmosphere-layer ${environment}`} aria-hidden="true" />}
       <div className="meteor-layer" aria-hidden="true">{meteors.map((meteor) => <span key={meteor.id} className="meteor" style={{ left: `${meteor.left}%`, top: `${meteor.top}%`, ["--angle" as string]: `${meteor.angle}deg`, animationDuration: `${meteor.duration}ms` }} />)}</div>
       {label && <div className="constellation-label" style={{ left: label.x, top: label.y }}><span>{label.latin}</span><strong>{label.name}</strong></div>}
-      {selectedBody && <aside className="body-detail"><button className="detail-close" onClick={() => setSelectedBody(null)} aria-label="关闭详情">×</button><div className="readout-label">CELESTIAL OBJECT · {selectedBody.latin}</div><h2>{selectedBody.name}</h2><div className="detail-type">{selectedBody.detail.type}</div><div className="detail-stats"><span><small>DISTANCE</small>{selectedBody.detail.distance}</span><span><small>MAGNITUDE</small>{selectedBody.detail.magnitude}</span></div><p>{selectedBody.detail.description}</p><button className="detail-focus" onClick={() => { const target = [...solarObjects, ...MESSIER_OBJECTS].find((item) => item.id === selectedBody.id); if (target) rotateToVector(target.vector); }}>转到目标位置 <LocateFixed size={14} /></button></aside>}
+      {selectedBody && <aside className="body-detail"><button className="detail-close" onClick={() => setSelectedBody(null)} aria-label="关闭详情">×</button><div className="readout-label">CELESTIAL OBJECT · {selectedBody.latin}</div><h2>{selectedBody.name}</h2><div className="detail-type">{selectedBody.detail.type}</div><div className="detail-stats"><span><small>DISTANCE</small>{selectedBody.detail.distance}</span><span><small>MAGNITUDE</small>{selectedBody.detail.magnitude}</span></div><p>{selectedBody.detail.description}</p><button className="detail-focus" onClick={() => { if (PLANET_IDS.has(selectedBody.id)) navigate(`/travel/${selectedBody.id}`); else { const target = [...solarObjects, ...MESSIER_OBJECTS].find((item) => item.id === selectedBody.id); if (target) rotateToVector(target.vector); } }}>{PLANET_IDS.has(selectedBody.id) ? <>开始星际旅行 <Telescope size={14} /></> : <>转到目标位置 <LocateFixed size={14} /></>}</button></aside>}
       <header className="topbar"><div className="brand"><div className="brand-mark"><span /><span /><span /></div><div><div className="eyebrow">NIGHT OBSERVATORY · 3D SKY</div><h1>午夜天文台</h1></div></div><div className="status"><span className="status-dot" /> HYG v4.1 · {STAR_COUNT.toLocaleString()} STARS <b>·</b> {CONSTELLATION_COUNT} CONSTELLATIONS</div><button className="icon-button" aria-label="观测信息"><Info size={17} /></button></header>
       <aside className="left-rail"><div className="rail-label">CONSTELLATIONS · {CONSTELLATION_COUNT}</div>{featured.map((item) => <button key={item.id} className={`constellation-tab ${active === item.id ? "active" : ""}`} onClick={() => toggleConstellation(item)}><span className={`tab-dot ${selectedConstellations.has(item.id) ? "selected" : ""}`} /><span>{item.name}</span><small>{item.abbr.toUpperCase()}</small></button>)}</aside>
       <section className="scene-hint"><Crosshair size={15} /><span>{isDragging ? "球面旋转中 · 探索天球" : "拖动以环视 3D 天球"}</span><kbd>ORBIT</kbd></section>
