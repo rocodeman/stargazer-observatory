@@ -113,3 +113,16 @@ button:focus-visible { outline:1px solid var(--brass); outline-offset:3px; }
 
 /* Three.js arrival viewport: a real WebGL canvas fills the observation stage. */
 .planet-three-scene{position:absolute;inset:0;width:100%;height:100%;cursor:grab;touch-action:none;z-index:1}.planet-three-scene:active{cursor:grabbing}.planet-three-scene canvas{display:block;width:100%;height:100%}.arrival-viewer .orbit-guide{z-index:2;pointer-events:none}.arrival-viewer .viewer-label{z-index:3;pointer-events:none}.arrival-viewer{isolation:isolate}
+
+/* Forward-motion pass: stars emerge from the vanishing point and expand toward the cockpit. */
+.travel-page.cruise-mode .travel-star.depth-0,.travel-page.cruise-mode .travel-star.depth-1,.travel-page.cruise-mode .travel-star.depth-2,.travel-page.cruise-mode .travel-star.depth-3,.travel-page.cruise-mode .travel-star.depth-4{left:50%;top:52%;width:var(--star-size);height:var(--star-size);opacity:0;transform-origin:0 0;animation:star-warp var(--star-duration) linear infinite;animation-delay:var(--star-delay)}
+@keyframes star-warp{0%{transform:rotate(var(--angle)) translateX(3vw) scale(.18);opacity:0}9%{opacity:.5}45%{opacity:.9}100%{transform:rotate(var(--angle)) translateX(var(--travel)) scale(2.8);opacity:0}}
+.travel-page.cruise-mode .travel-speed-lines{background:repeating-radial-gradient(circle at 50% 52%,transparent 0 9%,rgba(180,226,225,.11) 9.15% 9.25%,transparent 9.55% 18%);animation:speed-pulse 1.15s linear infinite;opacity:.48;mix-blend-mode:screen}
+@keyframes speed-pulse{0%{transform:scale(.58);opacity:0}16%{opacity:.48}100%{transform:scale(1.7);opacity:0}}
+.travel-page.cruise-mode .passing-asteroid{left:auto;animation-name:asteroid-sweep;animation-timing-function:cubic-bezier(.18,.72,.26,1)}
+@keyframes asteroid-sweep{0%{transform:translateX(0) rotate(0deg) scale(.65);opacity:0}10%{opacity:.95}75%{opacity:.72}100%{transform:translateX(calc(var(--fly) * 125vw)) rotate(520deg) scale(1.45);opacity:0}}
+.flight-velocity{position:absolute;z-index:5;right:3vw;bottom:9vh;display:grid;gap:3px;text-align:right;color:var(--muted);font:400 9px 'IBM Plex Mono';letter-spacing:.12em}.flight-velocity strong{color:var(--brass);font:500 24px 'IBM Plex Mono';letter-spacing:.04em;text-shadow:0 0 16px rgba(231,185,106,.5)}.flight-velocity em{color:var(--teal);font-style:normal;font-size:8px}.flight-velocity:before{content:"";position:absolute;right:0;top:-12px;width:72px;height:1px;background:linear-gradient(90deg,transparent,var(--brass));opacity:.6}
+@media(max-width:800px){.flight-velocity{right:22px;bottom:5vh}.flight-velocity strong{font-size:18px}}
+
+.travel-page.cruise-mode .travel-stars:before{content:"";position:absolute;inset:-18%;background:repeating-conic-gradient(from 0deg at 50% 52%,transparent 0 3.2deg,rgba(206,231,230,.07) 3.25deg 3.38deg,transparent 3.45deg 7.8deg);-webkit-mask-image:radial-gradient(ellipse at center,black 0%,transparent 68%);mask-image:radial-gradient(ellipse at center,black 0%,transparent 68%);animation:star-ray-spin 1.8s linear infinite;mix-blend-mode:screen}
+@keyframes star-ray-spin{from{transform:rotate(0deg) scale(.82);opacity:.3}50%{opacity:.6}to{transform:rotate(9deg) scale(1.18);opacity:.2}}
