@@ -32,3 +32,12 @@ button:focus-visible { outline:1px solid var(--brass); outline-offset:3px; }
 .bottom-bar{bottom:0;left:0;right:0;height:84px;padding:0 38px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(0deg,rgba(4,11,15,.88),transparent);color:var(--muted)}.location,.footer-meta{display:flex;align-items:center;gap:8px;font-size:9px;letter-spacing:.1em}.location svg,.footer-meta svg{color:var(--teal)}.azimuth-dial{position:relative;width:165px;height:34px;border-top:1px solid rgba(186,210,215,.3);border-bottom:1px solid rgba(186,210,215,.12)}.azimuth-dial:before,.azimuth-dial:after{content:"";position:absolute;top:-3px;height:5px;width:1px;background:var(--line-bright)}.azimuth-dial:before{left:50%}.azimuth-dial:after{right:0}.dial-tick{position:absolute;width:1px;height:4px;background:var(--line);top:-2px}.t1{left:25%}.t2{left:75%}.t3{left:10%}.dial-needle{position:absolute;width:1px;height:13px;left:50%;top:-1px;background:var(--brass);box-shadow:0 0 7px var(--brass)}.dial-north,.dial-east,.dial-south,.dial-west{position:absolute;font:9px 'IBM Plex Mono';top:11px}.dial-north{left:calc(50% - 3px);color:var(--brass)}.dial-east{right:-16px}.dial-south{left:calc(50% - 3px);top:40px}.dial-west{left:-16px}.footer-meta{gap:13px}.divider{height:11px;width:1px;background:var(--line)}
 @media (max-width:800px){.topbar{padding:0 18px;height:68px}.left-rail{left:18px;top:92px;width:130px}.right-console{right:18px;top:auto;bottom:90px;width:194px}.status{display:none}.bottom-bar{padding:0 18px}.location{display:none}.azimuth-dial{margin:auto}.observer{left:18%;transform:scale(.8);transform-origin:bottom left}.scene-hint{bottom:93px}.constellation-label strong{font-size:13px}}
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+
+/* 3D celestial sphere layer: the canvas fills the viewport, so rotation never exposes a flat image edge. */
+.sky-shell { position:absolute; inset:0; overflow:hidden; background:#050d15; }
+.sky-canvas { position:absolute; inset:0; display:block; width:100%; height:100%; }
+.sky-shell .milky-way { z-index:1; pointer-events:none; }
+.sky-shell .horizon { z-index:2; }
+.sky-gesture-layer { position:absolute; inset:0; z-index:3; cursor:grab; touch-action:none; }
+.sky-gesture-layer:active { cursor:grabbing; }
+.observatory > .constellation-label { z-index:4; transform:translate(-50%, -50%); pointer-events:none; white-space:nowrap; }
