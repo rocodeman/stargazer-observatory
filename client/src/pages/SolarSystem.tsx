@@ -1,5 +1,5 @@
 /* Design philosophy: 午夜天文台 / Scientific Instrument Aesthetic. This page is a calm digital orrery: orbit geometry is precise, controls are tactile, and the 3D system remains the visual focus. */
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Gauge, Pause, Play, RotateCcw } from "lucide-react";
 import { useLocation } from "wouter";
 import SolarSystemThreeScene from "@/components/SolarSystemThreeScene";
@@ -10,7 +10,19 @@ export default function SolarSystem() {
   const [speed, setSpeed] = useState(1);
   const [focus, setFocus] = useState("太阳系");
   const [signalNotice, setSignalNotice] = useState("");
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
+  const [contactChoice, setContactChoice] = useState<"none" | "decline" | "answer">("none");
   const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setContactDialogOpen(true), 10000);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  const chooseContactResponse = (choice: "decline" | "answer") => {
+    setContactChoice(choice);
+    setContactDialogOpen(false);
+  };
+
   const handleFocus = (name: string) => {
     setFocus(name);
     setSignalNotice("");
@@ -34,6 +46,8 @@ export default function SolarSystem() {
         <div className="solar-system-status"><span className={`status-dot ${running ? "" : "paused"}`} />{running ? "实时运行" : "已暂停"}</div>
       </header>
       {signalNotice && <div className="solar-signal-banner" role="status"><span className="signal-pulse" />{signalNotice}</div>}
+      {contactDialogOpen && <div className="contact-dialog-backdrop" role="presentation"><section className="contact-dialog" role="dialog" aria-modal="true" aria-labelledby="contact-dialog-title"><div className="contact-dialog-kicker">INCOMING DEEP-SPACE SIGNAL · α CENTAURI</div><h2 id="contact-dialog-title">是否回应这段来自宇宙的信号？</h2><p>通信窗口已打开。系统不会自动回答，请由你选择是否回应。</p><div className="contact-dialog-actions"><button type="button" className="contact-decline" onClick={() => chooseContactResponse("decline")}>不回答</button><button type="button" className="contact-answer" onClick={() => chooseContactResponse("answer")}>回答</button></div></section></div>}
+      {contactChoice !== "none" && <div className="contact-choice-status" role="status">已选择：{contactChoice === "decline" ? "不回答" : "回答"} · 系统未自动发送任何内容</div>}
       <div className="solar-system-stage"><SolarSystemThreeScene running={running} speed={speed} onFocus={handleFocus} /><div className="solar-system-caption"><span>当前聚焦</span><strong>{focus}</strong><small>拖拽旋转视角 · 滚轮缩放 · 点击行星查看</small></div></div>
       <aside className="solar-system-console">
         <div className="solar-console-kicker"><Gauge size={14} /> 太阳系 · 轨道观测</div>
