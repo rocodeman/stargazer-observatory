@@ -41,3 +41,25 @@ button:focus-visible { outline:1px solid var(--brass); outline-offset:3px; }
 .sky-gesture-layer { position:absolute; inset:0; z-index:3; cursor:grab; touch-action:none; }
 .sky-gesture-layer:active { cursor:grabbing; }
 .observatory > .constellation-label { z-index:4; transform:translate(-50%, -50%); pointer-events:none; white-space:nowrap; }
+
+/* Observer controls: compact instrument inputs keep operational data visible without competing with the sky. */
+.target-search { position:relative; display:flex; align-items:center; gap:8px; padding:10px 13px; border-bottom:1px solid var(--line); color:var(--teal); }
+.target-search input { width:100%; min-width:0; border:0; outline:0; background:transparent; color:var(--text); font:400 10px 'Noto Sans SC'; }
+.target-search input::placeholder { color:var(--muted); }
+.search-results { position:absolute; z-index:10; top:42px; left:10px; right:10px; border:1px solid var(--line-bright); background:rgba(5,15,23,.96); box-shadow:0 12px 25px rgba(0,0,0,.3); }
+.search-results button { width:100%; display:flex; align-items:center; justify-content:space-between; gap:8px; border:0; border-bottom:1px solid var(--line); padding:9px 10px; background:none; color:var(--text); text-align:left; font-size:10px; }
+.search-results button:hover { background:rgba(231,185,106,.09); color:var(--brass); }
+.search-results small { color:var(--muted); font:400 9px 'IBM Plex Mono'; }
+.observer-mini { padding:13px 15px; border-bottom:1px solid var(--line); color:var(--muted); }
+.mini-title { display:flex; align-items:center; gap:6px; color:var(--teal); font:500 9px 'IBM Plex Mono'; letter-spacing:.12em; margin-bottom:10px; }
+.observer-mini label { display:grid; gap:4px; font:400 9px 'Noto Sans SC'; color:var(--muted); }
+.observer-mini input { width:100%; min-width:0; border:1px solid var(--line); background:rgba(15,33,41,.55); color:var(--text); padding:5px 6px; outline:0; font:400 9px 'IBM Plex Mono'; }
+.observer-mini input:focus { border-color:var(--brass); }
+.coordinate-row { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-top:8px; }
+.lst-readout { display:flex; justify-content:space-between; margin-top:10px; font:400 8px 'IBM Plex Mono'; letter-spacing:.08em; }
+.lst-readout strong { color:var(--brass); font-weight:400; }
+@media (max-width:800px) { .observer-mini { padding:10px 12px; } .target-search input { font-size:9px; } }
+
+.right-console { max-height: calc(100vh - 174px); overflow-y:auto; scrollbar-width:thin; scrollbar-color:rgba(231,185,106,.55) transparent; }
+.right-console::-webkit-scrollbar { width:4px; }
+.right-console::-webkit-scrollbar-thumb { background:rgba(231,185,106,.45); }
