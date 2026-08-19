@@ -125,26 +125,34 @@ export default function Home() {
   const meteorId = useRef(0);
   const [cameraTarget, setCameraTarget] = useState<{ yaw: number; pitch: number } | null>(null);
   const [broadcastComplete, setBroadcastComplete] = useState(() => typeof window !== "undefined" && window.localStorage.getItem("stargazer.task.cosmicBroadcast") === "complete");
-  const [constellationHighlightCount, setConstellationHighlightCount] = useState(() => Math.min(5, Number(window.localStorage.getItem("stargazer.task.shineForYou.constellations") || 0)));
-  const shineComplete = constellationHighlightCount >= 5;
-  const toggleVisualIntensity = () => setVisualIntensity((mode) => mode === "strong" ? "soft" : "strong");
+  const [highlightModeCount, setHighlightModeCount] = useState(() => Math.min(3, Number(window.localStorage.getItem("stargazer.task.shineForYou.modeCount") || 0)));
+  const shineComplete = highlightModeCount >= 3;
+  const toggleVisualIntensity = () => {
+    setVisualIntensity((mode) => {
+      const nextMode = mode === "strong" ? "soft" : "strong";
+      if (nextMode === "strong") {
+        setHighlightModeCount((count) => {
+          const nextCount = Math.min(3, count + 1);
+          window.localStorage.setItem("stargazer.task.shineForYou.modeCount", String(nextCount));
+          return nextCount;
+        });
+      }
+      return nextMode;
+    });
+  };
   const highlightConstellation = (item: typeof SKY_DATA.constellations[number]) => {
     setSelectedConstellations((previous) => { const next = new Set(previous); next.add(item.id); return next; });
     setActive(item.id);
     setFocusTarget(item.id);
     focusConstellation(item);
-    setConstellationHighlightCount((count) => {
-      const next = Math.min(5, count + 1);
-      window.localStorage.setItem("stargazer.task.shineForYou.constellations", String(next));
-      return next;
-    });
   };
   const replayMissions = () => {
     window.localStorage.removeItem("stargazer.task.cosmicBroadcast");
     window.localStorage.removeItem("stargazer.task.shineForYou");
     window.localStorage.removeItem("stargazer.task.shineForYou.constellations");
+    window.localStorage.removeItem("stargazer.task.shineForYou.modeCount");
     setBroadcastComplete(false);
-    setConstellationHighlightCount(0);
+    setHighlightModeCount(0);
     setVisualIntensity("strong");
   };
 
