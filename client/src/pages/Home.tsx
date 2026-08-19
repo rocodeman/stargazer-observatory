@@ -251,8 +251,8 @@ export default function Home() {
             const from = projected.get(constellation.points[index]);
             const to = projected.get(constellation.points[index + 1]);
             if (!from || !to || !from.visible || !to.visible) continue;
-            ctx.strokeStyle = constellation.id === current.id ? "rgba(231,185,106,.88)" : "rgba(231,185,106,.25)";
-            ctx.lineWidth = constellation.id === current.id ? 1.15 : .62; ctx.setLineDash([5, 6]);
+            ctx.strokeStyle = "rgba(231,185,106,.72)";
+            ctx.lineWidth = 1.05; ctx.setLineDash([5, 6]);
             ctx.beginPath(); ctx.moveTo(from.sx, from.sy); ctx.lineTo(to.sx, to.sy); ctx.stroke();
           }
         }
@@ -272,8 +272,17 @@ export default function Home() {
           ctx.shadowBlur = 7;
           ctx.fillText(constellation.name, x, y - 5);
           ctx.font = "500 8px 'IBM Plex Mono'";
-          ctx.fillStyle = constellation.id === current.id ? "#e7b96a" : "rgba(145,190,192,.72)";
+          ctx.fillStyle = "#e7b96a";
           ctx.fillText(constellation.abbr.toUpperCase(), x, y + 8);
+          ctx.strokeStyle = "rgba(255,240,200,.9)";
+          ctx.fillStyle = "rgba(231,185,106,.95)";
+          ctx.lineWidth = 1;
+          for (const point of points) {
+            ctx.beginPath();
+            ctx.arc(point.sx, point.sy, 2.15, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+          }
         }
         ctx.textAlign = "start";
       }
