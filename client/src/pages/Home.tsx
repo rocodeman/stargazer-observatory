@@ -1,7 +1,7 @@
 /* Design philosophy: 午夜天文台 / Scientific Instrument Aesthetic. A true celestial sphere replaces the former flat viewport; controls remain edge-mounted and quiet. */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "wouter";
-import { Compass, Crosshair, Info, LocateFixed, MapPin, Minus, Moon, Plus, RotateCcw, Search, SunMedium, Telescope } from "lucide-react";
+import { Compass, Crosshair, Info, LocateFixed, Moon, Telescope } from "lucide-react";
 import { SKY_DATA } from "@/data/skyData";
 
 type Vec3 = { x: number; y: number; z: number };
@@ -244,8 +244,8 @@ export default function Home() {
         }
       }
       ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+      const constellationLayers = SKY_DATA.constellations.filter((constellation) => selectedConstellations.has(constellation.id));
       if (showLines) {
-        const constellationLayers = SKY_DATA.constellations.filter((constellation) => selectedConstellations.has(constellation.id));
         for (const constellation of constellationLayers) {
           for (let index = 0; index < constellation.points.length - 1; index += 1) {
             const from = projected.get(constellation.points[index]);
@@ -257,11 +257,27 @@ export default function Home() {
           }
         }
       }
-      const selectedPoints = current.points.map((hr) => projected.get(hr)).filter((p): p is Projected => Boolean(p && p.visible));
-      if (showNames && selectedConstellations.has(current.id) && selectedPoints.length) {
-        const center = selectedPoints.reduce((acc, p) => ({ x: acc.x + p.sx, y: acc.y + p.sy }), { x: 0, y: 0 });
-        setLabel({ x: center.x / selectedPoints.length, y: center.y / selectedPoints.length - 20, name: current.name, latin: current.abbr.toUpperCase() });
-      } else setLabel(null);
+      if (showNames) {
+        ctx.setLineDash([]);
+        for (const constellation of constellationLayers) {
+          const points = constellation.points.map((hr) => projected.get(hr)).filter((p): p is Projected => Boolean(p && p.visible));
+          if (!points.length) continue;
+          const center = points.reduce((acc, point) => ({ x: acc.x + point.sx, y: acc.y + point.sy }), { x: 0, y: 0 });
+          const x = center.x / points.length;
+          const y = center.y / points.length;
+          ctx.textAlign = "center";
+          ctx.font = constellation.id === current.id ? "500 13px 'Noto Sans SC'" : "500 10px 'Noto Sans SC'";
+          ctx.fillStyle = constellation.id === current.id ? "#e7b96a" : "rgba(224,234,228,.78)";
+          ctx.shadowColor = "rgba(4,12,18,.95)";
+          ctx.shadowBlur = 7;
+          ctx.fillText(constellation.name, x, y - 5);
+          ctx.font = "500 8px 'IBM Plex Mono'";
+          ctx.fillStyle = constellation.id === current.id ? "#e7b96a" : "rgba(145,190,192,.72)";
+          ctx.fillText(constellation.abbr.toUpperCase(), x, y + 8);
+        }
+        ctx.textAlign = "start";
+      }
+      setLabel(null);
       ctx.globalAlpha = 1;
     };
     render();
@@ -308,9 +324,7 @@ export default function Home() {
       {label && <div className="constellation-label" style={{ left: label.x, top: label.y }}><span>{label.latin}</span><strong>{label.name}</strong></div>}
       {selectedBody && <aside className="body-detail"><button className="detail-close" onClick={() => setSelectedBody(null)} aria-label="关闭详情">×</button><div className="readout-label">CELESTIAL OBJECT · {selectedBody.latin}</div><h2>{selectedBody.name}</h2><div className="detail-type">{selectedBody.detail.type}</div><div className="detail-stats"><span><small>DISTANCE</small>{selectedBody.detail.distance}</span><span><small>MAGNITUDE</small>{selectedBody.detail.magnitude}</span></div><p>{selectedBody.detail.description}</p><button className="detail-focus" onClick={() => { if (PLANET_IDS.has(selectedBody.id)) navigate(`/travel/${selectedBody.id}`); else { const target = [...solarObjects, ...MESSIER_OBJECTS].find((item) => item.id === selectedBody.id); if (target) rotateToVector(target.vector); } }}>{PLANET_IDS.has(selectedBody.id) ? <>开始星际旅行 <Telescope size={14} /></> : <>转到目标位置 <LocateFixed size={14} /></>}</button></aside>}
       <header className="topbar"><div className="brand"><div className="brand-mark"><span /><span /><span /></div><div><div className="eyebrow">NIGHT OBSERVATORY · 3D SKY</div><h1>午夜天文台</h1></div></div><div className="status"><span className="status-dot" /> HYG v4.1 · {STAR_COUNT.toLocaleString()} STARS <b>·</b> {CONSTELLATION_COUNT} CONSTELLATIONS</div><button className="icon-button" aria-label="观测信息"><Info size={17} /></button></header>
-      <aside className="left-rail"><div className="rail-label">CONSTELLATIONS · {CONSTELLATION_COUNT}</div>{featured.map((item) => <button key={item.id} className={`constellation-tab ${active === item.id ? "active" : ""}`} onClick={() => toggleConstellation(item)}><span className={`tab-dot ${selectedConstellations.has(item.id) ? "selected" : ""}`} /><span>{item.name}</span><small>{item.abbr.toUpperCase()}</small></button>)}</aside>
       <section className="scene-hint"><Crosshair size={15} /><span>{isDragging ? "球面旋转中 · 探索天球" : "拖动以环视 3D 天球"}</span><kbd>ORBIT</kbd></section>
-      <aside className="right-console"><div className="console-header"><span>TELESCOPE VIEW · 3D</span><Telescope size={17} /></div><div className="target-search"><Search size={14} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="搜索星座、行星或 M 天体" aria-label="搜索观测目标" />{searchResults.length > 0 && <div className="search-results">{searchResults.map((result) => <button key={`${result.id}-${result.latin}`} onClick={() => { rotateToVector(result.vector); setSearch(""); const constellation = SKY_DATA.constellations.find((item) => item.id === result.id); if (constellation) setActive(constellation.id); setFocusTarget(result.id); }}><span>{result.name}</span><small>{result.latin}</small></button>)}</div>}</div><div className="target-readout"><div className="readout-label">当前目标 · {current.name}</div><h2>{current.name}</h2><p>真实星表节点与星座线 · J2000</p><div className="readout-grid"><span><small>AZ</small>{azimuth}°</span><span><small>ALT</small>{altitude}°</span><span><small>MAG</small>{current.points.length}</span></div></div><div className="console-section"><div className="section-title"><span>VIEW SCALE</span><strong>{zoom.toFixed(1)}×</strong></div><div className="scale-control"><button onClick={() => setZoom(Math.max(.7, +(zoom - .1).toFixed(1)))} aria-label="缩小"><Minus size={14} /></button><div className="scale-track"><span style={{ width: `${((zoom - .7) / 1.1) * 100}%` }} /></div><button onClick={() => setZoom(Math.min(1.8, +(zoom + .1).toFixed(1)))} aria-label="放大"><Plus size={14} /></button></div></div><div className="console-section toggles"><button onClick={() => setShowLines(!showLines)} className={showLines ? "switch-on" : ""}><span className="switch" /><span>星座连线</span></button><button onClick={toggleAllConstellations} className={allConstellationsSelected ? "switch-on" : ""}><span className="switch" /><span>全部 89 星座</span></button><button onClick={() => setShowNames(!showNames)} className={showNames ? "switch-on" : ""}><span className="switch" /><span>名称标注</span></button><button onClick={() => setShowSolar(!showSolar)} className={showSolar ? "switch-on" : ""}><span className="switch" /><span>太阳 · 月球 · 行星</span></button><button onClick={() => setShowMessier(!showMessier)} className={showMessier ? "switch-on" : ""}><span className="switch" /><span>梅西耶天体</span></button></div><div className="environment-panel"><div className="mini-title"><SunMedium size={13} /> SKY CONDITION</div><div className="environment-buttons"><button className={environment === "wild" ? "selected" : ""} onClick={() => setEnvironment("wild")}>野外 · 暗夜</button><button className={environment === "city" ? "selected" : ""} onClick={() => setEnvironment("city")}>城市 · 光污染</button></div><button className={`atmosphere-toggle ${showAtmosphere ? "selected" : ""}`} onClick={() => setShowAtmosphere(!showAtmosphere)}><span className="switch" />大气层散射</button><button className={`atmosphere-toggle ${meteorEnabled ? "selected" : ""}`} onClick={() => setMeteorEnabled(!meteorEnabled)}><span className="switch" />持续流星雨</button></div><div className="observer-mini"><div className="mini-title"><MapPin size={13} /> OBSERVATION SITE</div><label>时间<input type="datetime-local" value={observerDate} onChange={(event) => setObserverDate(event.target.value)} /></label><div className="coordinate-row"><label>纬度<input type="number" value={latitude} onChange={(event) => setLatitude(Number(event.target.value))} /></label><label>经度<input type="number" value={longitude} onChange={(event) => setLongitude(Number(event.target.value))} /></label></div><div className="lst-readout">LOCAL SIDEREAL TIME <strong>{sidereal.toFixed(2)}h</strong></div></div><div className="time-panel"><div className="mini-title"><Moon size={13} /> TIME FLOW</div><div className="time-rate-row"><button onClick={() => setTimeRate(-60)} className={timeRate === -60 ? "selected" : ""}>−60×</button><button onClick={() => setTimeRate(-10)} className={timeRate === -10 ? "selected" : ""}>−10×</button><button onClick={() => setTimeRate(0)} className={timeRate === 0 ? "selected" : ""}>暂停</button><button onClick={() => setTimeRate(1)} className={timeRate === 1 ? "selected" : ""}>1×</button><button onClick={() => setTimeRate(10)} className={timeRate === 10 ? "selected" : ""}>10×</button><button onClick={() => setTimeRate(60)} className={timeRate === 60 ? "selected" : ""}>60×</button></div><div className="time-status">每现实 1 秒推进 {timeRate === 0 ? "0 分钟" : `${Math.abs(timeRate)} 分钟`} {timeRate < 0 ? "· 倒退" : timeRate === 0 ? "· 已暂停" : "· 正向"}</div></div><div className="console-actions"><button className="tool-active"><LocateFixed size={16} /><span>锁定目标</span></button><button onClick={resetView}><RotateCcw size={16} /><span>重置视角</span></button></div></aside>
       <footer className="bottom-bar"><div className="location"><Compass size={15} /><span>纬 {latitude.toFixed(2)}° · 经 {longitude.toFixed(2)}° · J2000</span></div><div className="azimuth-dial"><span className="dial-tick t1" /><span className="dial-tick t2" /><span className="dial-tick t3" /><span className="dial-needle" /><span className="dial-north">N</span><span className="dial-east">E</span><span className="dial-south">S</span><span className="dial-west">W</span></div><div className="footer-meta"><span><Moon size={14} /> 朔月 · 04:18</span><span className="divider" /><span>HYG / BSC</span></div></footer>
     </main>
   );
