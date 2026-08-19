@@ -228,11 +228,18 @@ export default function Home() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    let disposed = false;
+    let frame = 0;
     const render = () => {
+      if (disposed) return;
       const rect = canvas.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       const width = rect.width;
       const height = rect.height;
+      if (width <= 0 || height <= 0) {
+        frame = requestAnimationFrame(render);
+        return;
+      }
       if (canvas.width !== Math.round(width * dpr) || canvas.height !== Math.round(height * dpr)) {
         canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr);
       }
@@ -326,7 +333,17 @@ export default function Home() {
       setLabel(null);
       ctx.globalAlpha = 1;
     };
-    render();
+    const resizeObserver = new ResizeObserver(() => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(render);
+    });
+    resizeObserver.observe(canvas);
+    frame = requestAnimationFrame(render);
+    return () => {
+      disposed = true;
+      cancelAnimationFrame(frame);
+      resizeObserver.disconnect();
+    };
   }, [stars, current, byHr, skyYaw, pitch, zoom, showLines, selectedConstellations, showNames, showSolar, showMessier, solarObjects, environment, visualIntensity]);
 
   const startDrag = (event: React.PointerEvent<HTMLDivElement>) => {
