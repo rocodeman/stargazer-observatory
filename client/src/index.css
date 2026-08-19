@@ -1,177 +1,34 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&family=Space+Grotesk:wght@400;500;600&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
-@theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-}
-
-:root {
-  --primary: var(--color-blue-700);
-  --primary-foreground: var(--color-blue-50);
-  --sidebar-primary: var(--color-blue-600);
-  --sidebar-primary-foreground: var(--color-blue-50);
-  --chart-1: var(--color-blue-300);
-  --chart-2: var(--color-blue-500);
-  --chart-3: var(--color-blue-600);
-  --chart-4: var(--color-blue-700);
-  --chart-5: var(--color-blue-800);
-  --radius: 0.65rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.235 0.015 65);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.235 0.015 65);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.235 0.015 65);
-  --secondary: oklch(0.98 0.001 286.375);
-  --secondary-foreground: oklch(0.4 0.015 65);
-  --muted: oklch(0.967 0.001 286.375);
-  --muted-foreground: oklch(0.552 0.016 285.938);
-  --accent: oklch(0.967 0.001 286.375);
-  --accent-foreground: oklch(0.141 0.005 285.823);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.92 0.004 286.32);
-  --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.623 0.214 259.815);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.235 0.015 65);
-  --sidebar-accent: oklch(0.967 0.001 286.375);
-  --sidebar-accent-foreground: oklch(0.141 0.005 285.823);
-  --sidebar-border: oklch(0.92 0.004 286.32);
-  --sidebar-ring: oklch(0.623 0.214 259.815);
-}
-
-.dark {
-  --primary: var(--color-blue-700);
-  --primary-foreground: var(--color-blue-50);
-  --sidebar-primary: var(--color-blue-500);
-  --sidebar-primary-foreground: var(--color-blue-50);
-  --background: oklch(0.141 0.005 285.823);
-  --foreground: oklch(0.85 0.005 65);
-  --card: oklch(0.21 0.006 285.885);
-  --card-foreground: oklch(0.85 0.005 65);
-  --popover: oklch(0.21 0.006 285.885);
-  --popover-foreground: oklch(0.85 0.005 65);
-  --secondary: oklch(0.24 0.006 286.033);
-  --secondary-foreground: oklch(0.7 0.005 65);
-  --muted: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.705 0.015 286.067);
-  --accent: oklch(0.274 0.006 286.033);
-  --accent-foreground:  oklch(0.92 0.005 65);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.488 0.243 264.376);
-  --chart-1: var(--color-blue-300);
-  --chart-2: var(--color-blue-500);
-  --chart-3: var(--color-blue-600);
-  --chart-4: var(--color-blue-700);
-  --chart-5: var(--color-blue-800);
-  --sidebar: oklch(0.21 0.006 285.885);
-  --sidebar-foreground: oklch(0.85 0.005 65);
-  --sidebar-accent: oklch(0.274 0.006 286.033);
-  --sidebar-accent-foreground:  oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.488 0.243 264.376);
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-  button:not(:disabled),
-  [role="button"]:not([aria-disabled="true"]),
-  [type="button"]:not(:disabled),
-  [type="submit"]:not(:disabled),
-  [type="reset"]:not(:disabled),
-  a[href],
-  select:not(:disabled),
-  input[type="checkbox"]:not(:disabled),
-  input[type="radio"]:not(:disabled) {
-    @apply cursor-pointer;
-  }
-}
-
-@layer components {
-  /**
-   * Custom container utility that centers content and adds responsive padding.
-   *
-   * This overrides Tailwind's default container behavior to:
-   * - Auto-center content (mx-auto)
-   * - Add responsive horizontal padding
-   * - Set max-width for large screens
-   *
-   * Usage: <div className="container">...</div>
-   *
-   * For custom widths, use max-w-* utilities directly:
-   * <div className="max-w-6xl mx-auto px-4">...</div>
-   */
-  .container {
-    width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: 1rem; /* 16px - mobile padding */
-    padding-right: 1rem;
-  }
-
-  .flex {
-    min-height: 0;
-    min-width: 0;
-  }
-
-  @media (min-width: 640px) {
-    .container {
-      padding-left: 1.5rem; /* 24px - tablet padding */
-      padding-right: 1.5rem;
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .container {
-      padding-left: 2rem; /* 32px - desktop padding */
-      padding-right: 2rem;
-      max-width: 1280px; /* Standard content width */
-    }
-  }
-}
+/* Design philosophy: 午夜天文台 / low-luminance scientific instrument UI. The sky remains dominant; warm brass marks targets, mist teal reports instrument state. */
+:root { --ink:#071018; --ink-soft:#0b1823; --panel:rgba(6,16,24,.72); --line:rgba(171,201,210,.20); --line-bright:rgba(212,228,228,.36); --text:#e8ece3; --muted:#96a8ad; --brass:#e7b96a; --teal:#91bec0; --ease-out:cubic-bezier(.23,1,.32,1); }
+* { box-sizing:border-box; }
+html,body,#root { width:100%; height:100%; margin:0; overflow:hidden; }
+body { background:var(--ink); color:var(--text); font-family:'Noto Sans SC',sans-serif; }
+button { font:inherit; color:inherit; }
+button:focus-visible { outline:1px solid var(--brass); outline-offset:3px; }
+.observatory { position:relative; width:100%; height:100%; overflow:hidden; background:#07111a; cursor:grab; user-select:none; }
+.observatory:active { cursor:grabbing; }
+.sky-stage { position:absolute; inset:-3%; transform-origin:center 48%; transition:transform .18s var(--ease-out); }
+.sky-gradient { position:absolute; inset:0; background:radial-gradient(ellipse at 52% 15%,#1b3d58 0%,#10283b 26%,#091823 58%,#050d15 100%); }
+.sky-gradient:after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(7,17,26,.08) 0%,rgba(7,17,26,0) 48%,rgba(5,11,15,.72) 100%); }
+.milky-way { position:absolute; width:82%; height:28%; top:7%; left:5%; opacity:.14; transform:rotate(-17deg); background:radial-gradient(ellipse at center,rgba(206,233,236,.8),transparent 62%); filter:blur(28px); }
+.stars-layer { position:absolute; inset:0; }
+.star { position:absolute; display:block; border-radius:50%; background:#f2f2df; box-shadow:0 0 8px rgba(222,239,232,.64); animation:twinkle 4.8s ease-in-out infinite alternate; }
+.star-warm { background:#efc77c; box-shadow:0 0 10px rgba(231,185,106,.75); }.star-cool { background:#a9d7e8; box-shadow:0 0 9px rgba(145,190,192,.72); }.star-white { background:#eef0e7; }
+.star:nth-child(3n){animation-delay:-1.4s}.star:nth-child(5n){animation-delay:-3.1s}.star:nth-child(7n){animation-duration:6.3s}
+@keyframes twinkle { to { opacity:.45; transform:scale(.72); } }
+.horizon-glow { position:absolute; left:-10%; right:-10%; bottom:21%; height:23%; background:radial-gradient(ellipse,rgba(32,81,87,.42),transparent 70%); filter:blur(22px); }
+.constellation-map { position:absolute; inset:0; width:100%; height:78%; overflow:visible; pointer-events:none; opacity:.9; transition:opacity .2s ease; }.constellation-map.hidden{opacity:0}.constellation-map line{stroke:var(--brass);stroke-width:.105;stroke-dasharray:1.2 .7;filter:drop-shadow(0 0 2px rgba(231,185,106,.8))}.constellation-map circle{fill:#f4d18b;stroke:#fff0c8;stroke-width:.08;filter:drop-shadow(0 0 2px rgba(231,185,106,.9))}
+.constellation-label { position:absolute; display:flex; flex-direction:column; gap:2px; color:var(--brass); text-shadow:0 1px 14px #071018; pointer-events:none; }.constellation-label span{font:500 9px 'IBM Plex Mono';letter-spacing:.14em;opacity:.76}.constellation-label strong{font:500 16px 'Noto Sans SC';letter-spacing:.18em;}
+.horizon { position:absolute; left:-4%; right:-4%; bottom:0; height:33%; pointer-events:none; }.horizon-back{bottom:11%;opacity:.54;filter:blur(1px)}.ridge{position:absolute;bottom:0;background:#08151d;clip-path:polygon(0 100%,0 65%,13% 70%,21% 48%,28% 65%,38% 31%,48% 64%,57% 42%,65% 66%,77% 37%,85% 58%,100% 30%,100% 100%);width:100%;height:100%}.ridge-two{transform:translateX(9%);opacity:.65}.ridge-three{transform:translateX(-12%) scale(1.06);opacity:.4}.horizon-front{background:linear-gradient(180deg,transparent 0%,rgba(4,11,15,.88) 48%,#040b0f 100%);}.ground-texture{position:absolute;inset:52% 0 0;background:radial-gradient(ellipse at 50% 0%,rgba(17,43,46,.5),transparent 65%)}
+.observer{position:absolute;left:26%;bottom:4%;width:180px;height:250px;filter:drop-shadow(0 12px 12px rgba(0,0,0,.36));}.observer-head{position:absolute;left:73px;top:23px;width:29px;height:37px;border-radius:50% 48% 45% 47%;background:#050b0e}.observer-body{position:absolute;left:53px;top:55px;width:72px;height:134px;border-radius:46% 46% 16% 16%;background:#050b0e;transform:rotate(4deg)}.observer-leg{position:absolute;top:170px;width:20px;height:82px;background:#050b0e;border-radius:20px}.observer-leg.left{left:60px;transform:rotate(8deg)}.observer-leg.right{left:100px;transform:rotate(-6deg)}.telescope-tripod{position:absolute;left:136px;top:148px;width:4px;height:98px;background:#050b0e;transform:rotate(8deg)}.telescope-tripod:before,.telescope-tripod:after{content:"";position:absolute;bottom:-7px;width:3px;height:83px;background:#050b0e;transform-origin:top}.telescope-tripod:before{transform:rotate(24deg)}.telescope-tripod:after{transform:rotate(-24deg)}.telescope-tube{position:absolute;left:79px;top:94px;width:114px;height:22px;border-radius:16px 6px 6px 16px;background:#050b0e;transform:rotate(-20deg)}.telescope-lens{position:absolute;left:181px;top:80px;width:11px;height:31px;border-radius:2px;background:#050b0e;transform:rotate(-20deg)}
+.topbar,.left-rail,.right-console,.bottom-bar,.scene-hint{position:absolute;z-index:5}.topbar{top:0;left:0;right:0;height:88px;display:flex;align-items:center;justify-content:space-between;padding:0 38px;border-bottom:1px solid rgba(186,210,215,.11);background:linear-gradient(180deg,rgba(4,12,18,.65),transparent)}.brand{display:flex;align-items:center;gap:13px}.brand-mark{position:relative;width:30px;height:30px;border:1px solid var(--brass);border-radius:50%;display:flex;align-items:center;justify-content:center;gap:2px;transform:rotate(-18deg)}.brand-mark:after{content:"";position:absolute;width:36px;height:1px;background:var(--brass);left:-4px;top:14px;opacity:.65}.brand-mark span{width:3px;height:3px;background:var(--brass);border-radius:50%;display:block}.brand-mark span:nth-child(2){width:5px;height:5px}.eyebrow,.rail-label,.console-header,.readout-label,.section-title,.status,.scene-hint,.location,.footer-meta{font:500 10px 'IBM Plex Mono';letter-spacing:.16em}.eyebrow{font-size:9px;color:var(--teal);margin-bottom:3px}.brand h1{font:500 18px 'Noto Sans SC';letter-spacing:.13em;margin:0}.status{color:var(--muted);position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;letter-spacing:.12em}.status b{color:var(--brass);font-weight:400;margin:0 9px}.status-dot{width:6px;height:6px;display:inline-block;margin-right:8px;border-radius:50%;background:#93c49c;box-shadow:0 0 10px #93c49c}.icon-button{border:1px solid var(--line);background:rgba(8,23,31,.42);width:34px;height:34px;display:grid;place-items:center;color:var(--muted);transition:.16s var(--ease-out)}.icon-button:hover{color:var(--brass);border-color:var(--brass);transform:translateY(-1px)}
+.left-rail{left:38px;top:150px;width:160px}.rail-label{color:var(--muted);font-size:9px;padding-bottom:12px;border-bottom:1px solid var(--line);margin-bottom:8px}.constellation-tab{position:relative;width:100%;height:47px;display:grid;grid-template-columns:12px 1fr;grid-template-rows:21px 16px;text-align:left;padding:6px 0 5px 2px;border:0;background:none;color:var(--muted);transition:.18s var(--ease-out)}.constellation-tab:hover,.constellation-tab.active{color:var(--text);transform:translateX(4px)}.constellation-tab.active{color:var(--brass)}.tab-dot{grid-row:1 / span 2;align-self:center;width:5px;height:5px;border:1px solid currentColor;border-radius:50%;box-shadow:0 0 7px currentColor}.constellation-tab.active .tab-dot{background:var(--brass)}.constellation-tab span{font-size:13px;letter-spacing:.06em}.constellation-tab small{font:400 9px 'IBM Plex Mono';letter-spacing:.12em;opacity:.62}
+.scene-hint{left:50%;bottom:122px;transform:translateX(-50%);display:flex;gap:9px;align-items:center;color:rgba(224,234,228,.65);font-size:10px;letter-spacing:.08em;padding:7px 11px;border:1px solid rgba(186,210,215,.14);background:rgba(4,14,20,.3);backdrop-filter:blur(6px)}.scene-hint svg{color:var(--brass)}kbd{font:500 8px 'IBM Plex Mono';color:var(--teal);border:1px solid rgba(145,190,192,.32);padding:3px 4px}
+.right-console{right:38px;top:148px;width:224px;background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(18px);box-shadow:0 18px 45px rgba(0,0,0,.18)}.console-header{height:42px;padding:0 15px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);color:var(--teal);font-size:9px}.console-header svg{color:var(--brass)}.target-readout{padding:18px 15px 16px;border-bottom:1px solid var(--line)}.readout-label{font-size:9px;color:var(--muted);margin-bottom:7px}.target-readout h2{font:500 21px 'Noto Sans SC';letter-spacing:.1em;margin:0 0 5px;color:var(--brass)}.target-readout p{font-size:11px;color:var(--muted);margin:0 0 16px;line-height:1.7}.readout-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.readout-grid span{font:500 13px 'IBM Plex Mono';color:var(--text);border-left:1px solid var(--line);padding-left:7px}.readout-grid small{display:block;font-size:8px;color:var(--muted);margin-bottom:3px;letter-spacing:.13em}.console-section{padding:15px;border-bottom:1px solid var(--line)}.section-title{display:flex;justify-content:space-between;color:var(--muted);font-size:9px}.section-title strong{color:var(--brass);font-weight:400}.scale-control{display:flex;align-items:center;gap:9px;margin-top:13px}.scale-control button{border:0;background:none;color:var(--muted);padding:2px;display:grid;place-items:center}.scale-control button:hover{color:var(--brass)}.scale-track{height:2px;flex:1;background:rgba(186,210,215,.2)}.scale-track span{display:block;height:100%;background:var(--brass);transition:width .16s var(--ease-out)}.toggles{display:grid;gap:12px}.toggles button{display:flex;align-items:center;gap:9px;border:0;background:none;text-align:left;color:var(--muted);font-size:11px}.toggles button:hover,.toggles button.switch-on{color:var(--text)}.switch{width:20px;height:10px;border-radius:8px;border:1px solid rgba(186,210,215,.35);position:relative}.switch:after{content:"";position:absolute;width:5px;height:5px;border-radius:50%;top:1px;left:2px;background:var(--muted);transition:.16s var(--ease-out)}.switch-on .switch{border-color:var(--brass)}.switch-on .switch:after{left:11px;background:var(--brass);box-shadow:0 0 6px var(--brass)}.console-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px}.console-actions button{height:35px;display:flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:rgba(10,27,35,.55);font-size:10px;color:var(--muted);transition:.16s var(--ease-out)}.console-actions button:hover,.console-actions .tool-active{color:var(--brass);border-color:rgba(231,185,106,.52);background:rgba(231,185,106,.07)}
+.bottom-bar{bottom:0;left:0;right:0;height:84px;padding:0 38px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(0deg,rgba(4,11,15,.88),transparent);color:var(--muted)}.location,.footer-meta{display:flex;align-items:center;gap:8px;font-size:9px;letter-spacing:.1em}.location svg,.footer-meta svg{color:var(--teal)}.azimuth-dial{position:relative;width:165px;height:34px;border-top:1px solid rgba(186,210,215,.3);border-bottom:1px solid rgba(186,210,215,.12)}.azimuth-dial:before,.azimuth-dial:after{content:"";position:absolute;top:-3px;height:5px;width:1px;background:var(--line-bright)}.azimuth-dial:before{left:50%}.azimuth-dial:after{right:0}.dial-tick{position:absolute;width:1px;height:4px;background:var(--line);top:-2px}.t1{left:25%}.t2{left:75%}.t3{left:10%}.dial-needle{position:absolute;width:1px;height:13px;left:50%;top:-1px;background:var(--brass);box-shadow:0 0 7px var(--brass)}.dial-north,.dial-east,.dial-south,.dial-west{position:absolute;font:9px 'IBM Plex Mono';top:11px}.dial-north{left:calc(50% - 3px);color:var(--brass)}.dial-east{right:-16px}.dial-south{left:calc(50% - 3px);top:40px}.dial-west{left:-16px}.footer-meta{gap:13px}.divider{height:11px;width:1px;background:var(--line)}
+@media (max-width:800px){.topbar{padding:0 18px;height:68px}.left-rail{left:18px;top:92px;width:130px}.right-console{right:18px;top:auto;bottom:90px;width:194px}.status{display:none}.bottom-bar{padding:0 18px}.location{display:none}.azimuth-dial{margin:auto}.observer{left:18%;transform:scale(.8);transform-origin:bottom left}.scene-hint{bottom:93px}.constellation-label strong{font-size:13px}}
+@media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
