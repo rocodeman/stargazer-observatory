@@ -8,6 +8,7 @@ type Vec3 = { x: number; y: number; z: number };
 type Projected = Vec3 & { sx: number; sy: number; visible: boolean };
 
 const FEATURED = ["ori", "uma", "cas", "cyg", "sco", "leo", "gem", "tau", "lyr", "sgr", "and", "peg"];
+const DEFAULT_VISUAL_INTENSITY = "strong" as const;
 const STAR_COUNT = SKY_DATA.meta.starCount;
 const CONSTELLATION_COUNT = SKY_DATA.meta.constellationCount;
 
@@ -111,7 +112,7 @@ export default function Home() {
   const [longitude, setLongitude] = useState(121.47);
   const [showSolar, setShowSolar] = useState(true);
   const [showMessier, setShowMessier] = useState(true);
-  const [visualIntensity, setVisualIntensity] = useState<"strong" | "soft">("strong");
+  const [visualIntensity, setVisualIntensity] = useState<"strong" | "soft">(DEFAULT_VISUAL_INTENSITY);
   const [selectedBody, setSelectedBody] = useState<{ id: string; name: string; latin: string; detail: { type: string; distance: string; magnitude: string; description: string } } | null>(null);
   const [environment, setEnvironment] = useState<"wild" | "city">("wild");
   const [showAtmosphere, setShowAtmosphere] = useState(true);
@@ -127,6 +128,9 @@ export default function Home() {
   const [broadcastComplete, setBroadcastComplete] = useState(() => typeof window !== "undefined" && window.localStorage.getItem("stargazer.task.cosmicBroadcast") === "complete");
   const [highlightModeCount, setHighlightModeCount] = useState(() => Math.min(3, Number(window.localStorage.getItem("stargazer.task.shineForYou.modeCount") || 0)));
   const shineComplete = highlightModeCount >= 3;
+  useEffect(() => {
+    setVisualIntensity(DEFAULT_VISUAL_INTENSITY);
+  }, []);
   const toggleVisualIntensity = () => {
     setVisualIntensity((mode) => {
       const nextMode = mode === "strong" ? "soft" : "strong";
@@ -153,7 +157,7 @@ export default function Home() {
     window.localStorage.removeItem("stargazer.task.shineForYou.modeCount");
     setBroadcastComplete(false);
     setHighlightModeCount(0);
-    setVisualIntensity("strong");
+    setVisualIntensity(DEFAULT_VISUAL_INTENSITY);
   };
 
   const stars = useMemo(() => SKY_DATA.stars.map((star) => ({ ...star, vector: toVector(star.ra, star.dec) })), []);
