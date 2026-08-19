@@ -24,27 +24,33 @@ export default function Home() {
   const [zoom, setZoom] = useState(1);
   const [azimuth, setAzimuth] = useState(184);
   const [altitude, setAltitude] = useState(42);
+  const [viewX, setViewX] = useState(0);
+  const [viewY, setViewY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const drag = useRef({ x: 0, y: 0, az: 184, alt: 42 });
+  const drag = useRef({ x: 0, y: 0, viewX: 0, viewY: 0, az: 184, alt: 42 });
   const stars = useMemo(() => seededStars(168), []);
   const constellation = CONSTELLATIONS.find((item) => item.id === active) ?? CONSTELLATIONS[0];
 
   const startDrag = (event: React.PointerEvent<HTMLDivElement>) => {
     event.currentTarget.setPointerCapture(event.pointerId);
-    drag.current = { x: event.clientX, y: event.clientY, az: azimuth, alt: altitude };
+    drag.current = { x: event.clientX, y: event.clientY, viewX, viewY, az: azimuth, alt: altitude };
     setIsDragging(true);
   };
   const moveDrag = (event: React.PointerEvent<HTMLDivElement>) => {
     if (!isDragging) return;
-    setAzimuth(Math.round((drag.current.az - (event.clientX - drag.current.x) * 0.18 + 360) % 360));
-    setAltitude(Math.max(12, Math.min(78, Math.round(drag.current.alt + (event.clientY - drag.current.y) * 0.1))));
+    const nextX = Math.max(-520, Math.min(520, drag.current.viewX - (event.clientX - drag.current.x)));
+    const nextY = Math.max(-300, Math.min(300, drag.current.viewY - (event.clientY - drag.current.y)));
+    setViewX(nextX);
+    setViewY(nextY);
+    setAzimuth(Math.round((drag.current.az + nextX * 0.22 + 360) % 360));
+    setAltitude(Math.max(12, Math.min(78, Math.round(drag.current.alt + nextY * 0.12))));
   };
   const stopDrag = () => setIsDragging(false);
-  const resetView = () => { setAzimuth(184); setAltitude(42); setZoom(1); };
+  const resetView = () => { setAzimuth(184); setAltitude(42); setViewX(0); setViewY(0); setZoom(1); };
 
   return (
-    <main className="observatory" onPointerMove={moveDrag} onPointerUp={stopDrag} onPointerCancel={stopDrag}>
-      <div className="sky-stage" style={{ transform: `scale(${zoom}) translate(${(184 - azimuth) * 0.012}%, ${(42 - altitude) * 0.03}%)` }}>
+    <main className="observatory" onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={stopDrag} onPointerCancel={stopDrag}>
+      <div className="sky-stage" style={{ transform: `translate(${viewX}px, ${viewY}px) scale(${zoom})` }}>
         <div className="sky-gradient" />
         <div className="milky-way" />
         <div className="stars-layer" aria-hidden="true">
