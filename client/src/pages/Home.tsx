@@ -125,21 +125,26 @@ export default function Home() {
   const meteorId = useRef(0);
   const [cameraTarget, setCameraTarget] = useState<{ yaw: number; pitch: number } | null>(null);
   const [broadcastComplete, setBroadcastComplete] = useState(() => typeof window !== "undefined" && window.localStorage.getItem("stargazer.task.cosmicBroadcast") === "complete");
-  const [highlightClickCount, setHighlightClickCount] = useState(() => Math.min(5, Number(window.localStorage.getItem("stargazer.task.shineForYou") || 0)));
-  const shineComplete = highlightClickCount >= 5;
-  const toggleVisualIntensity = () => {
-    setVisualIntensity((mode) => mode === "strong" ? "soft" : "strong");
-    setHighlightClickCount((count) => {
+  const [constellationHighlightCount, setConstellationHighlightCount] = useState(() => Math.min(5, Number(window.localStorage.getItem("stargazer.task.shineForYou.constellations") || 0)));
+  const shineComplete = constellationHighlightCount >= 5;
+  const toggleVisualIntensity = () => setVisualIntensity((mode) => mode === "strong" ? "soft" : "strong");
+  const highlightConstellation = (item: typeof SKY_DATA.constellations[number]) => {
+    setSelectedConstellations((previous) => { const next = new Set(previous); next.add(item.id); return next; });
+    setActive(item.id);
+    setFocusTarget(item.id);
+    focusConstellation(item);
+    setConstellationHighlightCount((count) => {
       const next = Math.min(5, count + 1);
-      window.localStorage.setItem("stargazer.task.shineForYou", String(next));
+      window.localStorage.setItem("stargazer.task.shineForYou.constellations", String(next));
       return next;
     });
   };
   const replayMissions = () => {
     window.localStorage.removeItem("stargazer.task.cosmicBroadcast");
     window.localStorage.removeItem("stargazer.task.shineForYou");
+    window.localStorage.removeItem("stargazer.task.shineForYou.constellations");
     setBroadcastComplete(false);
-    setHighlightClickCount(0);
+    setConstellationHighlightCount(0);
     setVisualIntensity("strong");
   };
 
@@ -343,7 +348,16 @@ export default function Home() {
       const distance = Math.hypot(point.sx - x, point.sy - y);
       if (point.visible && distance < nearestDistance) { nearest = target; nearestDistance = distance; }
     }
-    if (nearest) setSelectedBody(nearest);
+    if (nearest) { setSelectedBody(nearest); return; }
+    let nearestConstellation: { item: typeof SKY_DATA.constellations[number]; distance: number } | null = null;
+    for (const item of SKY_DATA.constellations) {
+      const points = item.points.map((hr) => project(byHr.get(hr)?.vector ?? { x: 0, y: 0, z: 0 }, skyYaw, pitch, rect.width, rect.height, zoom)).filter((point) => point.visible);
+      if (!points.length) continue;
+      const center = points.reduce((acc, point) => ({ x: acc.x + point.sx, y: acc.y + point.sy }), { x: 0, y: 0 });
+      const distance = Math.hypot(center.x / points.length - x, center.y / points.length - y);
+      if (!nearestConstellation || distance < nearestConstellation.distance) nearestConstellation = { item, distance };
+    }
+    if (nearestConstellation && nearestConstellation.distance < 52) highlightConstellation(nearestConstellation.item);
   };
   const resetView = () => { setYaw(.9); setPitch(.18); setZoom(1); setCameraTarget(null); };
   const azimuth = Math.round((((yaw * 180) / Math.PI + 360) % 360));
