@@ -132,3 +132,6 @@ button:focus-visible { outline:1px solid var(--brass); outline-offset:3px; }
 @media(max-width:800px){.ai-log-panel{left:22px;right:22px;bottom:15vh;width:auto}.navigation-panel{left:22px;right:22px;top:27vh;width:auto}.nav-targets{grid-template-columns:repeat(6,1fr)}.nav-target{min-height:26px;font-size:9px}.nav-target small{display:none}.ai-log-panel p{font-size:10px}.flight-velocity{bottom:4vh}}
 
 @media(max-width:800px){.travel-page.cruise-mode .flight-console{top:40vh;bottom:auto;max-height:29vh;overflow-y:auto}.travel-page.cruise-mode .navigation-panel{top:23vh;bottom:auto}.travel-page.cruise-mode .ai-log-panel{top:71vh;bottom:auto;max-height:15vh;overflow:hidden}.travel-page.cruise-mode .ai-log-panel p{margin:7px 0}.travel-page.cruise-mode .log-stream{display:none}.travel-page.cruise-mode .flight-status{bottom:5.5vh}.travel-page.cruise-mode .flight-velocity{bottom:1.6vh}}
+
+/* Minimal flight chrome: remove decorative framing while keeping functional panels intact. */
+.travel-page.cruise-mode .travel-topbar{border-bottom:0;background:transparent}.travel-page.cruise-mode .flight-hud{top:12vh;left:6vw}.travel-page.cruise-mode .flight-hud h1{margin:0;font-size:clamp(28px,4vw,50px)}.travel-page.cruise-mode .cockpit-ship{bottom:9vh}.travel-page.cruise-mode .flight-status{bottom:4vh}
