@@ -187,3 +187,65 @@ button:focus-visible { outline:1px solid var(--brass); outline-offset:3px; }
 /* Solar return and aligned log rail. */
 .travel-page.cruise-mode .flight-console{text-align:left}.travel-page.cruise-mode .ai-log-panel{top:18vh;bottom:auto;right:4vw;text-align:left}.travel-page.cruise-mode .ai-log-panel .log-stream span{display:block;margin-top:8px;text-align:left}.travel-page.cruise-mode .ai-log-panel .log-stream b{display:inline-block;min-width:54px;color:rgba(231,185,106,.72);font:400 8px 'IBM Plex Mono';letter-spacing:.03em}.travel-page.cruise-mode .ai-log-panel .log-time{color:rgba(159,196,195,.76);font-size:9px}.sun-safe-arrival .arrival-copy{text-align:left}.sun-safe-arrival .mission-kicker{color:#f0c978}.sun-safe-arrival .viewer-label{color:#f0c978}
 @media(max-width:800px){.travel-page.cruise-mode .ai-log-panel{top:auto;bottom:8vh;right:22px}.travel-page.cruise-mode .ai-log-panel .log-stream b{min-width:46px}.sun-safe-arrival .arrival-copy{text-align:left}}
+
+
+/* 修复抵达模式返回入口：三维抵达层覆盖整个视口时，顶部栏必须保持在最上层且可点击。 */
+.travel-page .travel-topbar { position: relative; z-index: 12; pointer-events: auto; }
+.travel-page .travel-back { position: relative; z-index: 13; pointer-events: auto; cursor: pointer; }
+
+/* AI 航行日志可读性增强：扩大信息层级、提高亮度与行高，并增加稳定的深色阅读底。 */
+.travel-page.cruise-mode .ai-log-panel {
+  width: min(330px, 30vw);
+  padding: 12px 14px;
+  background: linear-gradient(135deg, rgba(5, 19, 28, .78), rgba(3, 10, 17, .62));
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .22);
+  backdrop-filter: blur(9px);
+}
+.travel-page.cruise-mode .ai-log-panel .panel-kicker {
+  color: #f0c978;
+  font-size: 11px;
+  letter-spacing: .13em;
+  text-shadow: 0 0 10px rgba(231, 185, 106, .42);
+}
+.travel-page.cruise-mode .ai-log-panel .log-time {
+  margin-top: 11px;
+  color: #a8d8d4;
+  font-size: 11px;
+  line-height: 1.5;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, .7);
+}
+.travel-page.cruise-mode .ai-log-panel p {
+  margin: 10px 0 13px;
+  color: #f1f2e9;
+  font-size: 13px;
+  line-height: 1.8;
+  text-shadow: 0 1px 5px rgba(0, 0, 0, .85);
+}
+.travel-page.cruise-mode .ai-log-panel .log-stream {
+  gap: 7px;
+  padding-top: 10px;
+  border-top-color: rgba(168, 216, 212, .32);
+}
+.travel-page.cruise-mode .ai-log-panel .log-stream span {
+  color: #c3d1cf;
+  font-size: 10.5px;
+  line-height: 1.65;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, .8);
+}
+.travel-page.cruise-mode .ai-log-panel .log-stream span.current {
+  color: #f0c978;
+}
+.travel-page.cruise-mode .ai-log-panel .log-stream b {
+  color: #9ed2cf;
+  font-weight: 500;
+}
+@media (max-width: 800px) {
+  .travel-page.cruise-mode .ai-log-panel {
+    width: auto;
+    padding: 9px 11px;
+  }
+  .travel-page.cruise-mode .ai-log-panel .panel-kicker { font-size: 9px; }
+  .travel-page.cruise-mode .ai-log-panel .log-time { font-size: 9.5px; }
+  .travel-page.cruise-mode .ai-log-panel p { font-size: 11px; line-height: 1.65; }
+  .travel-page.cruise-mode .ai-log-panel .log-stream span { font-size: 9px; }
+}
