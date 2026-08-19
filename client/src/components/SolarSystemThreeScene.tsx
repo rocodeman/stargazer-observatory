@@ -46,6 +46,7 @@ export default function SolarSystemThreeScene({ running, speed, onFocus }: Props
     const system = new THREE.Group();
     scene.add(system);
     const sun = new THREE.Mesh(new THREE.SphereGeometry(.82, 48, 32), new THREE.MeshBasicMaterial({ color: "#ffd875" }));
+    sun.userData = { name: "太阳" };
     system.add(sun);
     const sunGlow = new THREE.Mesh(new THREE.SphereGeometry(1.06, 32, 24), new THREE.MeshBasicMaterial({ color: "#e7a944", transparent: true, opacity: .16, side: THREE.BackSide, blending: THREE.AdditiveBlending }));
     system.add(sunGlow);
@@ -88,7 +89,7 @@ export default function SolarSystemThreeScene({ running, speed, onFocus }: Props
     const move = (event: PointerEvent) => { if (!view.dragging) return; view.yaw -= (event.clientX - view.x) * .006; view.pitch -= (event.clientY - view.y) * .006; view.x = event.clientX; view.y = event.clientY; updateCamera(); };
     const up = () => { view.dragging = false; };
     const wheel = (event: WheelEvent) => { event.preventDefault(); view.distance = Math.max(7, Math.min(24, view.distance + event.deltaY * .012)); updateCamera(); };
-    const click = (event: MouseEvent) => { const rect = renderer.domElement.getBoundingClientRect(); const ndc = new THREE.Vector2(((event.clientX - rect.left) / rect.width) * 2 - 1, -((event.clientY - rect.top) / rect.height) * 2 + 1); const raycaster = new THREE.Raycaster(); raycaster.setFromCamera(ndc, camera); const hit = raycaster.intersectObjects(bodies.map((item) => item.mesh)); if (hit[0]?.object.userData.name) focusRef.current?.(hit[0].object.userData.name); };
+    const click = (event: MouseEvent) => { const rect = renderer.domElement.getBoundingClientRect(); const ndc = new THREE.Vector2(((event.clientX - rect.left) / rect.width) * 2 - 1, -((event.clientY - rect.top) / rect.height) * 2 + 1); const raycaster = new THREE.Raycaster(); raycaster.setFromCamera(ndc, camera); const hit = raycaster.intersectObjects([sun, ...bodies.map((item) => item.mesh)]); if (hit[0]?.object.userData.name) focusRef.current?.(hit[0].object.userData.name); };
     mount.addEventListener("pointerdown", down); mount.addEventListener("pointermove", move); mount.addEventListener("pointerup", up); mount.addEventListener("pointercancel", up); mount.addEventListener("wheel", wheel, { passive: false }); mount.addEventListener("click", click);
     let frame = 0;
     const animate = () => { frame = requestAnimationFrame(animate); if (runningRef.current) { const factor = speedRef.current * .004; bodies.forEach(({ body, group }) => { group.rotation.y += factor / body.period; }); sun.rotation.y += factor * .35; } renderer.render(scene, camera); };

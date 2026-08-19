@@ -287,3 +287,8 @@ button:focus-visible { outline:1px solid var(--brass); outline-offset:3px; }
 /* 天体详情操作层级：先执行星际旅行，再进入太阳系运转观察。 */
 .body-detail .travel-focus{margin-bottom:18px}
 .body-detail .solar-orbit-focus{margin-top:0}
+
+
+/* Solar signal banner: the completed voice message becomes a restrained top-of-page transmission notice. */
+.solar-signal-banner{position:absolute;z-index:8;top:98px;left:50%;transform:translateX(-50%);width:min(760px,72vw);padding:11px 18px;border:1px solid rgba(231,185,106,.42);background:rgba(6,18,25,.78);backdrop-filter:blur(12px);color:#f0c978;text-align:center;font:500 11px/1.6 'Noto Sans SC';letter-spacing:.08em;box-shadow:0 10px 26px rgba(0,0,0,.18),0 0 24px rgba(231,185,106,.08);animation:signal-banner-in .35s var(--ease-out)}.signal-pulse{display:inline-block;width:6px;height:6px;margin-right:9px;border-radius:50%;vertical-align:1px;background:#9de4bc;box-shadow:0 0 10px #9de4bc;animation:panel-blink 1.4s infinite}@keyframes signal-banner-in{from{opacity:0;transform:translateX(-50%) translateY(-8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@media(max-width:800px){.solar-signal-banner{top:78px;width:calc(100vw - 36px);padding:9px 12px;font-size:9px}}
