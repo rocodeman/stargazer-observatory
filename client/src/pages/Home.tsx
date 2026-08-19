@@ -76,7 +76,7 @@ function getSolarObjects(date: Date) {
   });
 }
 
-const PLANET_IDS = new Set(["mercury", "venus", "mars", "jupiter", "saturn"]);
+const PLANET_IDS = new Set(["sun", "mercury", "venus", "mars", "jupiter", "saturn"]);
 const BODY_DETAILS: Record<string, { type: string; distance: string; magnitude: string; description: string }> = {
   sun: { type: "恒星 · G2V", distance: "1 AU", magnitude: "−26.74", description: "太阳系中心恒星，提供地球上绝大多数可见光与热量。观测模拟中以当前日期的近似黄经位置显示。" },
   moon: { type: "地球卫星", distance: "384,400 km", magnitude: "−12.7", description: "地球唯一的天然卫星。月球位置和亮度会随着观测时间变化，夜空中的大气散射也会受其影响。" },

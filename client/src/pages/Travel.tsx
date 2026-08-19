@@ -4,6 +4,7 @@ import { ArrowLeft, Gauge, Orbit, Radio, Rocket, Telescope } from "lucide-react"
 import { useLocation, useParams } from "wouter";
 
 const PLANETS: Record<string, { name: string; latin: string; color: string; distance: string; travel: string; description: string; orbit: string }> = {
+  sun: { name: "太阳", latin: "SUN", color: "#ffd875", distance: "149.6 million km", travel: "8 minutes", description: "从地球返回太阳的模拟航行。飞船需要在接近阶段降低热负荷，并进入安全观测距离。", orbit: "1 AU" },
   mercury: { name: "水星", latin: "MERCURY", color: "#b89270", distance: "91.7 million km", travel: "3 months", description: "航向最接近太阳的行星。接近目标后，飞船需要抵抗强烈的太阳辐射与高温环境。", orbit: "0.39 AU" },
   venus: { name: "金星", latin: "VENUS", color: "#e7c887", distance: "41.4 million km", travel: "5 months", description: "云层下的高温世界。航行界面会在接近阶段提高大气散射与目标辉光。", orbit: "0.72 AU" },
   mars: { name: "火星", latin: "MARS", color: "#d87458", distance: "78.3 million km", travel: "7 months", description: "红色行星与未来深空任务的重要目的地。当前模拟展示行星际转移航段。", orbit: "1.52 AU" },
