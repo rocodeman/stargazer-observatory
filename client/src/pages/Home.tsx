@@ -111,10 +111,11 @@ export default function Home() {
   const [longitude, setLongitude] = useState(121.47);
   const [showSolar, setShowSolar] = useState(true);
   const [showMessier, setShowMessier] = useState(true);
+  const [visualIntensity, setVisualIntensity] = useState<"strong" | "soft">("strong");
   const [selectedBody, setSelectedBody] = useState<{ id: string; name: string; latin: string; detail: { type: string; distance: string; magnitude: string; description: string } } | null>(null);
   const [environment, setEnvironment] = useState<"wild" | "city">("wild");
   const [showAtmosphere, setShowAtmosphere] = useState(true);
-  const [timeRate, setTimeRate] = useState(1);
+  const [timeRate, setTimeRate] = useState(0);
   const [meteorEnabled, setMeteorEnabled] = useState(false);
   const [meteors, setMeteors] = useState<Array<{ id: number; left: number; top: number; angle: number; duration: number }>>([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -251,35 +252,40 @@ export default function Home() {
             const from = projected.get(constellation.points[index]);
             const to = projected.get(constellation.points[index + 1]);
             if (!from || !to || !from.visible || !to.visible) continue;
-            ctx.strokeStyle = "rgba(231,185,106,.72)";
-            ctx.lineWidth = 1.05; ctx.setLineDash([5, 6]);
+            ctx.strokeStyle = visualIntensity === "strong" ? "rgba(231,185,106,.72)" : "rgba(166,184,175,.28)";
+            ctx.lineWidth = visualIntensity === "strong" ? 1.05 : .7; ctx.setLineDash([5, 6]);
             ctx.beginPath(); ctx.moveTo(from.sx, from.sy); ctx.lineTo(to.sx, to.sy); ctx.stroke();
           }
         }
       }
       if (showNames) {
         ctx.setLineDash([]);
+        const occupiedLabels: Array<{ x: number; y: number; width: number; height: number }> = [];
+        const labelCandidates = [[0, -22], [0, 22], [-34, -12], [34, -12], [-34, 16], [34, 16], [0, -42], [0, 42]];
         for (const constellation of constellationLayers) {
           const points = constellation.points.map((hr) => projected.get(hr)).filter((p): p is Projected => Boolean(p && p.visible));
           if (!points.length) continue;
           const center = points.reduce((acc, point) => ({ x: acc.x + point.sx, y: acc.y + point.sy }), { x: 0, y: 0 });
-          const x = center.x / points.length;
-          const y = center.y / points.length;
+          const centerX = center.x / points.length;
+          const centerY = center.y / points.length;
+          const nameWidth = Math.max(34, constellation.name.length * 11);
+          const candidate = labelCandidates.map(([dx, dy]) => ({ x: centerX + dx, y: centerY + dy, width: nameWidth, height: 25 })).find((item) => occupiedLabels.every((used) => Math.abs(item.x - used.x) > (item.width + used.width) / 2 || Math.abs(item.y - used.y) > (item.height + used.height) / 2)) ?? { x: centerX, y: centerY - 22, width: nameWidth, height: 25 };
+          occupiedLabels.push(candidate);
           ctx.textAlign = "center";
           ctx.font = constellation.id === current.id ? "500 13px 'Noto Sans SC'" : "500 10px 'Noto Sans SC'";
-          ctx.fillStyle = constellation.id === current.id ? "#e7b96a" : "rgba(224,234,228,.78)";
+          ctx.fillStyle = visualIntensity === "strong" ? (constellation.id === current.id ? "#e7b96a" : "rgba(224,234,228,.9)") : "rgba(184,199,192,.58)";
           ctx.shadowColor = "rgba(4,12,18,.95)";
-          ctx.shadowBlur = 7;
-          ctx.fillText(constellation.name, x, y - 5);
+          ctx.shadowBlur = visualIntensity === "strong" ? 7 : 4;
+          ctx.fillText(constellation.name, candidate.x, candidate.y);
           ctx.font = "500 8px 'IBM Plex Mono'";
-          ctx.fillStyle = "#e7b96a";
-          ctx.fillText(constellation.abbr.toUpperCase(), x, y + 8);
-          ctx.strokeStyle = "rgba(255,240,200,.9)";
-          ctx.fillStyle = "rgba(231,185,106,.95)";
-          ctx.lineWidth = 1;
+          ctx.fillStyle = visualIntensity === "strong" ? "#e7b96a" : "rgba(145,190,192,.55)";
+          ctx.fillText(constellation.abbr.toUpperCase(), candidate.x, candidate.y + 13);
+          ctx.strokeStyle = visualIntensity === "strong" ? "rgba(255,240,200,.9)" : "rgba(206,220,208,.42)";
+          ctx.fillStyle = visualIntensity === "strong" ? "rgba(231,185,106,.95)" : "rgba(170,190,182,.48)";
+          ctx.lineWidth = visualIntensity === "strong" ? 1 : .7;
           for (const point of points) {
             ctx.beginPath();
-            ctx.arc(point.sx, point.sy, 2.15, 0, Math.PI * 2);
+            ctx.arc(point.sx, point.sy, visualIntensity === "strong" ? 2.15 : 1.45, 0, Math.PI * 2);
             ctx.fill();
             ctx.stroke();
           }
@@ -290,7 +296,7 @@ export default function Home() {
       ctx.globalAlpha = 1;
     };
     render();
-  }, [stars, current, byHr, skyYaw, pitch, zoom, showLines, selectedConstellations, showNames, showSolar, showMessier, solarObjects, environment]);
+  }, [stars, current, byHr, skyYaw, pitch, zoom, showLines, selectedConstellations, showNames, showSolar, showMessier, solarObjects, environment, visualIntensity]);
 
   const startDrag = (event: React.PointerEvent<HTMLDivElement>) => {
     event.currentTarget.setPointerCapture(event.pointerId);
@@ -333,7 +339,7 @@ export default function Home() {
       {label && <div className="constellation-label" style={{ left: label.x, top: label.y }}><span>{label.latin}</span><strong>{label.name}</strong></div>}
       {selectedBody && <aside className="body-detail"><button className="detail-close" onClick={() => setSelectedBody(null)} aria-label="关闭详情">×</button><div className="readout-label">CELESTIAL OBJECT · {selectedBody.latin}</div><h2>{selectedBody.name}</h2><div className="detail-type">{selectedBody.detail.type}</div><div className="detail-stats"><span><small>DISTANCE</small>{selectedBody.detail.distance}</span><span><small>MAGNITUDE</small>{selectedBody.detail.magnitude}</span></div><p>{selectedBody.detail.description}</p><button className="detail-focus" onClick={() => { if (PLANET_IDS.has(selectedBody.id)) navigate(`/travel/${selectedBody.id}`); else { const target = [...solarObjects, ...MESSIER_OBJECTS].find((item) => item.id === selectedBody.id); if (target) rotateToVector(target.vector); } }}>{PLANET_IDS.has(selectedBody.id) ? <>开始星际旅行 <Telescope size={14} /></> : <>转到目标位置 <LocateFixed size={14} /></>}</button></aside>}
       <header className="topbar"><div className="brand"><div className="brand-mark"><span /><span /><span /></div><div><div className="eyebrow">NIGHT OBSERVATORY · 3D SKY</div><h1>午夜天文台</h1></div></div><div className="status"><span className="status-dot" /> HYG v4.1 · {STAR_COUNT.toLocaleString()} STARS <b>·</b> {CONSTELLATION_COUNT} CONSTELLATIONS</div><button className="icon-button" aria-label="观测信息"><Info size={17} /></button></header>
-      <section className="scene-hint"><Crosshair size={15} /><span>{isDragging ? "球面旋转中 · 探索天球" : "拖动以环视 3D 天球"}</span><kbd>ORBIT</kbd></section>
+      <section className="scene-hint"><Crosshair size={15} /><span>{isDragging ? "球面旋转中 · 探索天球" : "拖动以环视 3D 天球"}</span><kbd>ORBIT</kbd><button className={`intensity-toggle ${visualIntensity === "strong" ? "active" : ""}`} onClick={() => setVisualIntensity((mode) => mode === "strong" ? "soft" : "strong")} aria-pressed={visualIntensity === "strong"}>{visualIntensity === "strong" ? "全部高亮" : "柔和显示"}</button></section>
       <footer className="bottom-bar"><div className="location"><Compass size={15} /><span>纬 {latitude.toFixed(2)}° · 经 {longitude.toFixed(2)}° · J2000</span></div><div className="azimuth-dial"><span className="dial-tick t1" /><span className="dial-tick t2" /><span className="dial-tick t3" /><span className="dial-needle" /><span className="dial-north">N</span><span className="dial-east">E</span><span className="dial-south">S</span><span className="dial-west">W</span></div><div className="footer-meta"><span><Moon size={14} /> 朔月 · 04:18</span><span className="divider" /><span>HYG / BSC</span></div></footer>
     </main>
   );

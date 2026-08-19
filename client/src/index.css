@@ -249,3 +249,26 @@ button:focus-visible { outline:1px solid var(--brass); outline-offset:3px; }
   .travel-page.cruise-mode .ai-log-panel p { font-size: 11px; line-height: 1.65; }
   .travel-page.cruise-mode .ai-log-panel .log-stream span { font-size: 9px; }
 }
+
+
+/* 视觉强度切换：作为场景提示中的轻量仪器按钮，不重新引入侧边控制面板。 */
+.intensity-toggle {
+  border: 1px solid rgba(145,190,192,.34);
+  background: rgba(6,18,25,.62);
+  color: var(--teal);
+  padding: 4px 7px;
+  font: 500 8px 'Noto Sans SC';
+  letter-spacing: .06em;
+  cursor: pointer;
+  transition: color .16s var(--ease-out), border-color .16s var(--ease-out), background .16s var(--ease-out);
+}
+.intensity-toggle:hover,
+.intensity-toggle.active {
+  color: var(--brass);
+  border-color: rgba(231,185,106,.65);
+  background: rgba(231,185,106,.1);
+}
+@media (max-width:800px) {
+  .scene-hint { gap: 6px; font-size: 9px; }
+  .intensity-toggle { padding: 3px 5px; font-size: 7px; }
+}
