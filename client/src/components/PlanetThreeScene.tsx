@@ -50,7 +50,7 @@ export default function PlanetThreeScene({ planetId, color, onAnglesChange }: Pr
     if (!mount) return;
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(38, 1, .1, 100);
-    angles.current.distance = 5.2;
+    angles.current.distance = planetId === "sun" ? 8.5 : 5.2;
     camera.position.set(0, 0, angles.current.distance);
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -88,11 +88,11 @@ export default function PlanetThreeScene({ planetId, color, onAnglesChange }: Pr
     const pointerDown = (event: PointerEvent) => { angles.current.dragging = true; angles.current.x = event.clientX; angles.current.y = event.clientY; mount.setPointerCapture(event.pointerId); };
     const pointerMove = (event: PointerEvent) => { if (!angles.current.dragging) return; angles.current.yaw += (event.clientX - angles.current.x) * .42; angles.current.pitch = Math.max(-55, Math.min(55, angles.current.pitch - (event.clientY - angles.current.y) * .3)); angles.current.x = event.clientX; angles.current.y = event.clientY; callbackRef.current?.(angles.current.yaw, angles.current.pitch); };
     const pointerUp = () => { angles.current.dragging = false; };
-    const wheel = (event: WheelEvent) => { event.preventDefault(); angles.current.distance = Math.max(3.2, Math.min(7, angles.current.distance + event.deltaY * .003)); };
+    const wheel = (event: WheelEvent) => { event.preventDefault(); const minDistance = planetId === "sun" ? 7.2 : 3.2; const maxDistance = planetId === "sun" ? 11 : 7; angles.current.distance = Math.max(minDistance, Math.min(maxDistance, angles.current.distance + event.deltaY * .003)); };
     mount.addEventListener("pointerdown", pointerDown); mount.addEventListener("pointermove", pointerMove); mount.addEventListener("pointerup", pointerUp); mount.addEventListener("pointercancel", pointerUp); mount.addEventListener("wheel", wheel, { passive: false });
     let frame = 0; const animate = () => { frame = requestAnimationFrame(animate); if (!angles.current.dragging) angles.current.yaw += .018; planetGroup.rotation.y = THREE.MathUtils.degToRad(angles.current.yaw); planetGroup.rotation.x = THREE.MathUtils.degToRad(angles.current.pitch); camera.position.z = angles.current.distance; renderer.render(scene, camera); }; animate();
     return () => { cancelAnimationFrame(frame); window.removeEventListener("resize", resize); mount.removeEventListener("pointerdown", pointerDown); mount.removeEventListener("pointermove", pointerMove); mount.removeEventListener("pointerup", pointerUp); mount.removeEventListener("pointercancel", pointerUp); mount.removeEventListener("wheel", wheel); texture.dispose(); material.dispose(); sphere.geometry.dispose(); atmosphere.geometry.dispose(); (atmosphere.material as THREE.Material).dispose(); starGeometry.dispose(); (scene.children.find((item) => item instanceof THREE.Points)?.material as THREE.Material | undefined)?.dispose(); renderer.dispose(); renderer.domElement.remove(); };
   }, [planetId, color]);
 
-  return <div ref={mountRef} className="planet-three-scene" aria-label={`${planetId} 3D 行星观察视角`} />;
+  return <div ref={mountRef} className={`planet-three-scene ${planetId === "sun" ? "safe-solar-distance" : ""}`} aria-label={`${planetId} 3D 行星观察视角`} />;
 }

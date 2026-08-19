@@ -183,3 +183,7 @@ button:focus-visible { outline:1px solid var(--brass); outline-offset:3px; }
 @media(max-width:800px){.travel-page.cruise-mode .planet-list-panel{top:20vh}.travel-page.cruise-mode .flight-console{bottom:19vh}}
 
 @media(max-width:800px){.travel-page.cruise-mode .flight-console{bottom:31vh}.travel-page.cruise-mode .flight-console .mission-copy{max-width:310px;margin-top:8px;line-height:1.5}.travel-page.cruise-mode .flight-console:after{margin-top:5px}.travel-page.cruise-mode .ai-log-panel{bottom:8vh}}
+
+/* Solar return and aligned log rail. */
+.travel-page.cruise-mode .flight-console{text-align:left}.travel-page.cruise-mode .ai-log-panel{top:18vh;bottom:auto;right:4vw;text-align:left}.travel-page.cruise-mode .ai-log-panel .log-stream span{display:block;margin-top:8px;text-align:left}.travel-page.cruise-mode .ai-log-panel .log-stream b{display:inline-block;min-width:54px;color:rgba(231,185,106,.72);font:400 8px 'IBM Plex Mono';letter-spacing:.03em}.travel-page.cruise-mode .ai-log-panel .log-time{color:rgba(159,196,195,.76);font-size:9px}.sun-safe-arrival .arrival-copy{text-align:left}.sun-safe-arrival .mission-kicker{color:#f0c978}.sun-safe-arrival .viewer-label{color:#f0c978}
+@media(max-width:800px){.travel-page.cruise-mode .ai-log-panel{top:auto;bottom:8vh;right:22px}.travel-page.cruise-mode .ai-log-panel .log-stream b{min-width:46px}.sun-safe-arrival .arrival-copy{text-align:left}}
