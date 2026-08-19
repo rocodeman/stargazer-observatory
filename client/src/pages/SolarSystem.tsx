@@ -13,9 +13,13 @@ export default function SolarSystem() {
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
   const [contactChoice, setContactChoice] = useState<"none" | "decline" | "answer">("none");
   const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
-  useEffect(() => {
-    const timer = window.setTimeout(() => setContactDialogOpen(true), 10000);
-    return () => window.clearTimeout(timer);
+  const sequenceTimerRef = useRef<number | null>(null);
+  const sequenceRef = useRef(0);
+
+  useEffect(() => () => {
+    sequenceRef.current += 1;
+    window.speechSynthesis.cancel();
+    if (sequenceTimerRef.current !== null) window.clearTimeout(sequenceTimerRef.current);
   }, []);
 
   const chooseContactResponse = (choice: "decline" | "answer") => {
@@ -23,19 +27,42 @@ export default function SolarSystem() {
     setContactDialogOpen(false);
   };
 
-  const handleFocus = (name: string) => {
-    setFocus(name);
-    setSignalNotice("");
-    window.speechSynthesis.cancel();
-    speechRef.current = null;
-    if (name !== "太阳") return;
-    const utterance = new SpeechSynthesisUtterance("到这里来吧，我将帮助你们获得这个世界。我的文明已无力解决自己的问题，需要你们的力量来介入。");
+  const speakChinese = (text: string, onEnd: () => void) => {
+    const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "zh-CN";
     utterance.rate = .92;
     utterance.pitch = .86;
-    utterance.onend = () => setSignalNotice("借助太阳增益，向宇宙发射地球的基础问候信息，信号飞向半人马座α星。");
+    utterance.onend = onEnd;
     speechRef.current = utterance;
     window.speechSynthesis.speak(utterance);
+  };
+
+  const handleFocus = (name: string) => {
+    setFocus(name);
+    setSignalNotice("");
+    setContactDialogOpen(false);
+    setContactChoice("none");
+    sequenceRef.current += 1;
+    const sequence = sequenceRef.current;
+    window.speechSynthesis.cancel();
+    speechRef.current = null;
+    if (sequenceTimerRef.current !== null) window.clearTimeout(sequenceTimerRef.current);
+    sequenceTimerRef.current = null;
+    if (name !== "太阳") return;
+
+    speakChinese("到这里来吧，我将帮助你们获得这个世界。我的文明已无力解决自己的问题，需要你们的力量来介入。", () => {
+      if (sequence !== sequenceRef.current) return;
+      setSignalNotice("第一段通信已结束 · 等待 5 秒");
+      sequenceTimerRef.current = window.setTimeout(() => {
+        if (sequence !== sequenceRef.current) return;
+        setSignalNotice("请注意：不要回答");
+        speakChinese("不要回答。不要回答。不要回答。", () => {
+          if (sequence !== sequenceRef.current) return;
+          setSignalNotice("");
+          setContactDialogOpen(true);
+        });
+      }, 5000);
+    });
   };
 
   return (
