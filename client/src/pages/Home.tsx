@@ -350,14 +350,27 @@ export default function Home() {
     }
     if (nearest) { setSelectedBody(nearest); return; }
     let nearestConstellation: { item: typeof SKY_DATA.constellations[number]; distance: number } | null = null;
+    const distanceToSegment = (px: number, py: number, ax: number, ay: number, bx: number, by: number) => {
+      const dx = bx - ax;
+      const dy = by - ay;
+      const lengthSquared = dx * dx + dy * dy || 1;
+      const projection = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / lengthSquared));
+      return Math.hypot(px - (ax + projection * dx), py - (ay + projection * dy));
+    };
     for (const item of SKY_DATA.constellations) {
       const points = item.points.map((hr) => project(byHr.get(hr)?.vector ?? { x: 0, y: 0, z: 0 }, skyYaw, pitch, rect.width, rect.height, zoom)).filter((point) => point.visible);
       if (!points.length) continue;
+      let shapeDistance = Infinity;
+      points.forEach((point, index) => {
+        shapeDistance = Math.min(shapeDistance, Math.hypot(point.sx - x, point.sy - y));
+        if (index > 0) shapeDistance = Math.min(shapeDistance, distanceToSegment(x, y, points[index - 1].sx, points[index - 1].sy, point.sx, point.sy));
+      });
       const center = points.reduce((acc, point) => ({ x: acc.x + point.sx, y: acc.y + point.sy }), { x: 0, y: 0 });
-      const distance = Math.hypot(center.x / points.length - x, center.y / points.length - y);
+      const centerDistance = Math.hypot(center.x / points.length - x, center.y / points.length - y);
+      const distance = Math.min(shapeDistance, centerDistance * .7);
       if (!nearestConstellation || distance < nearestConstellation.distance) nearestConstellation = { item, distance };
     }
-    if (nearestConstellation && nearestConstellation.distance < 52) highlightConstellation(nearestConstellation.item);
+    if (nearestConstellation && nearestConstellation.distance < 48) highlightConstellation(nearestConstellation.item);
   };
   const resetView = () => { setYaw(.9); setPitch(.18); setZoom(1); setCameraTarget(null); };
   const azimuth = Math.round((((yaw * 180) / Math.PI + 360) % 360));
