@@ -144,12 +144,12 @@ export default function Home() {
     if (!meteorEnabled) { setMeteors([]); return; }
     const spawn = () => {
       const id = meteorId.current++;
-      const meteor = { id, left: 48 + Math.random() * 48, top: 4 + Math.random() * 48, angle: 28 + Math.random() * 23, duration: 900 + Math.random() * 1100 };
-      setMeteors((items) => [...items.slice(-7), meteor]);
+      const meteor = { id, left: 48 + Math.random() * 48, top: 4 + Math.random() * 48, angle: -45 + Math.random() * 12, duration: 760 + Math.random() * 820 };
+      setMeteors((items) => [...items.slice(-27), meteor]);
       window.setTimeout(() => setMeteors((items) => items.filter((item) => item.id !== id)), meteor.duration + 120);
     };
     spawn();
-    const timer = window.setInterval(spawn, 720);
+    const timer = window.setInterval(spawn, 180);
     return () => window.clearInterval(timer);
   }, [meteorEnabled]);
 

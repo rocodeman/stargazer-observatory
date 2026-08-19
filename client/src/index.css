@@ -69,7 +69,7 @@ button:focus-visible { outline:1px solid var(--brass); outline-offset:3px; }
 .atmosphere-layer.wild { background:linear-gradient(180deg,rgba(95,178,187,.03),rgba(37,93,102,.06) 62%,rgba(9,27,31,.22)); }
 .atmosphere-layer.city { background:radial-gradient(ellipse at 50% 88%,rgba(214,151,84,.42),rgba(163,112,73,.20) 34%,transparent 68%),linear-gradient(180deg,rgba(75,131,142,.12),rgba(27,49,55,.24)); }
 .meteor-layer { position:absolute; inset:0; z-index:4; pointer-events:none; overflow:hidden; }
-.meteor { position:absolute; width:110px; height:1.5px; transform-origin:right center; background:linear-gradient(90deg,transparent,rgba(255,249,213,.15) 26%,#fff6c7 100%); box-shadow:0 0 8px rgba(231,185,106,.9); animation:meteor-fall linear forwards; }
+.meteor { position:absolute; width:110px; height:1.5px; transform-origin:right center; background:linear-gradient(90deg,#fff6c7 0%,rgba(255,249,213,.18) 42%,transparent 100%); box-shadow:0 0 8px rgba(231,185,106,.9); animation:meteor-fall linear forwards; }
 @keyframes meteor-fall { 0% { opacity:0; transform:translate(0,0) rotate(var(--angle)); } 12% { opacity:1; } 100% { opacity:0; transform:translate(-260px,210px) rotate(var(--angle)); } }
 .body-detail { position:absolute; z-index:8; left:50%; top:50%; width:300px; transform:translate(-50%,-50%); padding:22px; border:1px solid rgba(231,185,106,.48); background:rgba(5,15,23,.94); backdrop-filter:blur(20px); box-shadow:0 25px 70px rgba(0,0,0,.45); animation:detail-in .24s var(--ease-out); }
 @keyframes detail-in { from { opacity:0; transform:translate(-50%,-47%) scale(.97); } to { opacity:1; transform:translate(-50%,-50%) scale(1); } }
