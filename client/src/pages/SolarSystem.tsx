@@ -25,6 +25,7 @@ export default function SolarSystem() {
   const chooseContactResponse = (choice: "decline" | "answer") => {
     setContactChoice(choice);
     setContactDialogOpen(false);
+    if (choice === "answer") window.localStorage.setItem("stargazer.task.cosmicBroadcast", "complete");
   };
 
   const speakChinese = (text: string, onEnd: () => void) => {
