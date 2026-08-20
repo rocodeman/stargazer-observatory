@@ -15,6 +15,7 @@ export default function SolarSystem() {
   const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
   const sequenceTimerRef = useRef<number | null>(null);
   const typingTimerRef = useRef<number | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
   const sequenceRef = useRef(0);
   const [communicationText, setCommunicationText] = useState("");
   const [communicationPhase, setCommunicationPhase] = useState<"idle" | "receiving" | "waiting" | "warning" | "complete">("idle");
@@ -24,12 +25,37 @@ export default function SolarSystem() {
     window.speechSynthesis.cancel();
     if (sequenceTimerRef.current !== null) window.clearTimeout(sequenceTimerRef.current);
     if (typingTimerRef.current !== null) window.clearInterval(typingTimerRef.current);
+    if (audioContextRef.current) void audioContextRef.current.close();
   }, []);
 
   const chooseContactResponse = (choice: "decline" | "answer") => {
     setContactChoice(choice);
     setContactDialogOpen(false);
     if (choice === "answer") window.localStorage.setItem("stargazer.task.cosmicBroadcast", "complete");
+  };
+
+  const playTypingClick = (index: number) => {
+    try {
+      const AudioContextConstructor = window.AudioContext ?? (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!AudioContextConstructor) return;
+      const context = audioContextRef.current ?? new AudioContextConstructor();
+      audioContextRef.current = context;
+      if (context.state === "suspended") void context.resume();
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      const now = context.currentTime;
+      oscillator.type = "square";
+      oscillator.frequency.setValueAtTime(index % 2 === 0 ? 740 : 620, now);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.026, now + 0.006);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start(now);
+      oscillator.stop(now + 0.05);
+    } catch {
+      // 浏览器禁用 Web Audio 时，文字转译仍正常工作。
+    }
   };
 
   const typeChinese = (text: string, sequence: number) => {
@@ -42,6 +68,7 @@ export default function SolarSystem() {
         return;
       }
       index += 1;
+      playTypingClick(index);
       setCommunicationText(text.slice(0, index));
       if (index >= text.length && typingTimerRef.current !== null) {
         window.clearInterval(typingTimerRef.current);
