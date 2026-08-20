@@ -830,7 +830,6 @@ button:focus-visible { outline:1px solid var(--brass); outline-offset:3px; }
 }
 .mission-hint-button:hover,
 .mission-hint-button:focus-visible { background: rgba(231, 185, 106, .18); color: var(--brass); transform: translateY(-1px); outline: none; }
-.mission-item.complete .mission-hint-button { border-color: rgba(163, 204, 193, .34); color: rgba(163, 204, 193, .72); background: rgba(163, 204, 193, .06); }
 .mission-hint-overlay {
   position: fixed;
   z-index: 15;

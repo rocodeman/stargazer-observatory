@@ -20,7 +20,7 @@ Manus 官方地址：[https://manus.im/](https://manus.im/)
 
 ## 特别感谢 changsheng
 
-特别感谢 [changsheng](https://github.com/changsheng0804-blip) 对本项目的关注与支持。其 GitHub 地址为：[https://github.com/changsheng0804-blip](https://github.com/changsheng0804-blip)。
+特别感谢 [changsheng](https://github.com/changsheng0804-blip) 对太阳系运动视觉效果的提升。其 GitHub 地址为：[https://github.com/changsheng0804-blip](https://github.com/changsheng0804-blip)。
 
 ## 首页预览
 
