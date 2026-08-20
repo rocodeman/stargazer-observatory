@@ -745,3 +745,26 @@ button:focus-visible { outline:1px solid var(--brass); outline-offset:3px; }
 @media (max-width: 640px) {
   .topbar-controls { gap: 5px; }
 }
+
+
+/* 三体终局视觉：黑暗森林是持续存在的观测结论，半透明叠在天球之上但不拦截任何操作。 */
+.dark-forest-title {
+  position: fixed;
+  z-index: 4;
+  left: 50%;
+  top: 48%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  white-space: nowrap;
+  color: rgba(226, 235, 226, .22);
+  font-family: "Noto Sans SC", sans-serif;
+  font-size: clamp(4rem, 12vw, 10rem);
+  font-weight: 800;
+  letter-spacing: .18em;
+  line-height: 1;
+  text-shadow: 0 0 28px rgba(163, 204, 193, .12), 0 2px 18px rgba(0, 0, 0, .55);
+  user-select: none;
+}
+@media (max-width: 640px) {
+  .dark-forest-title { top: 44%; font-size: clamp(2.8rem, 15vw, 5rem); letter-spacing: .1em; }
+}
