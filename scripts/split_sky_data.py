@@ -11,7 +11,9 @@ data = json.loads(text[json_start:json_end])
 
 featured_ids = ['ori', 'uma', 'cas', 'cyg', 'sco', 'leo', 'gem', 'tau', 'lyr', 'sgr', 'and', 'peg', 'aur', 'per', 'mon', 'vir', 'lib', 'cap', 'aqr', 'psc']
 featured = [item for item in data['constellations'] if item['id'] in featured_ids]
-star_ids = {point for item in featured for point in item['points']}
+constellation_star_ids = {point for item in featured for point in item['points']}
+brightest_stars = sorted(data['stars'], key=lambda star: (star['mag'], star['hr']))[:3000]
+star_ids = constellation_star_ids | {star['hr'] for star in brightest_stars}
 core_stars = [star for star in data['stars'] if star['hr'] in star_ids]
 core = {
     'stars': core_stars,
@@ -26,7 +28,7 @@ core = {
 def emit(path: Path, payload: dict, header: str) -> None:
     path.write_text(header + 'export const SKY_DATA = ' + json.dumps(payload, ensure_ascii=False, separators=(',', ':')) + ' as const;\n', encoding='utf-8')
 
-emit(root / 'client/src/data/skyDataCore.ts', core, '/* 首屏轻量星空数据：20 个重点星座及其必要星点。完整数据由 skyData.ts 按需加载。 */\n')
+emit(root / 'client/src/data/skyDataCore.ts', core, '/* 首屏星空数据：约 3,000 个高亮度星点、20 个重点星座及其必要连线星点。完整数据由 skyData.ts 按需加载。 */\n')
 (root / 'scripts/sky_data_split_report.json').write_text(json.dumps({
     'fullStars': len(data['stars']),
     'fullConstellations': len(data['constellations']),
