@@ -108,9 +108,9 @@ stargazer-observatory/
 
 ## 致谢
 
-特别感谢 [Manus 官方团队](https://manus.im/) 提供的限时免费活动与创作支持。本项目从界面设计、交互逻辑、Three.js 场景、任务系统到项目文档，均由 Manus 完成编写与整理。
+感谢 Manus 提供创作与开发支持。
 
-特别感谢 [changsheng](https://github.com/changsheng0804-blip) 对太阳系运动视觉效果的提升。
+特别感谢 [changsheng](https://github.com/changsheng0804-blip) 对本项目太阳系运动视觉效果的提升，重点包括行星材质表现、轨道运行观感与 Three.js 场景细节优化。
 
 ## 许可证
 
