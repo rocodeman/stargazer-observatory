@@ -90,11 +90,55 @@ export default function SolarSystemThreeScene({ running, speed, onFocus }: Props
     const up = () => { view.dragging = false; };
     const wheel = (event: WheelEvent) => { event.preventDefault(); view.distance = Math.max(7, Math.min(24, view.distance + event.deltaY * .012)); updateCamera(); };
     const click = (event: MouseEvent) => { const rect = renderer.domElement.getBoundingClientRect(); const ndc = new THREE.Vector2(((event.clientX - rect.left) / rect.width) * 2 - 1, -((event.clientY - rect.top) / rect.height) * 2 + 1); const raycaster = new THREE.Raycaster(); raycaster.setFromCamera(ndc, camera); const hit = raycaster.intersectObjects([sun, ...bodies.map((item) => item.mesh)]); if (hit[0]?.object.userData.name) focusRef.current?.(hit[0].object.userData.name); };
-    mount.addEventListener("pointerdown", down); mount.addEventListener("pointermove", move); mount.addEventListener("pointerup", up); mount.addEventListener("pointercancel", up); mount.addEventListener("wheel", wheel, { passive: false }); mount.addEventListener("click", click);
+    let isVisible = !document.hidden;
+    const handleVisibilityChange = () => {
+      isVisible = !document.hidden;
+      if (isVisible) {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(animate);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     let frame = 0;
-    const animate = () => { frame = requestAnimationFrame(animate); if (runningRef.current) { const factor = speedRef.current * .004; bodies.forEach(({ body, group }) => { group.rotation.y += factor / body.period; }); sun.rotation.y += factor * .35; } renderer.render(scene, camera); };
+    const animate = () => {
+      if (!isVisible) return;
+      frame = requestAnimationFrame(animate);
+      if (runningRef.current) {
+        const factor = speedRef.current * .004;
+        bodies.forEach(({ body, group }) => {
+          group.rotation.y += factor / body.period;
+        });
+        sun.rotation.y += factor * .35;
+      }
+      renderer.render(scene, camera);
+    };
     animate();
-    return () => { cancelAnimationFrame(frame); window.removeEventListener("resize", resize); mount.removeEventListener("pointerdown", down); mount.removeEventListener("pointermove", move); mount.removeEventListener("pointerup", up); mount.removeEventListener("pointercancel", up); mount.removeEventListener("wheel", wheel); mount.removeEventListener("click", click); bodies.forEach(({ group }) => group.children.forEach((child) => { if (child instanceof THREE.Mesh) { child.geometry.dispose(); (child.material as THREE.Material).dispose(); } })); starGeometry.dispose(); (stars.material as THREE.Material).dispose(); renderer.dispose(); renderer.domElement.remove(); };
+
+    return () => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("resize", resize);
+      mount.removeEventListener("pointerdown", down);
+      mount.removeEventListener("pointermove", move);
+      mount.removeEventListener("pointerup", up);
+      mount.removeEventListener("pointercancel", up);
+      mount.removeEventListener("wheel", wheel);
+      mount.removeEventListener("click", click);
+
+      scene.traverse((object) => {
+        if (object instanceof THREE.Mesh || object instanceof THREE.Points || object instanceof THREE.LineLoop) {
+          object.geometry?.dispose();
+          if (Array.isArray(object.material)) {
+            object.material.forEach((mat) => mat.dispose());
+          } else if (object.material) {
+            object.material.dispose();
+          }
+        }
+      });
+      renderer.dispose();
+      renderer.domElement.remove();
+    };
   }, []);
 
   return <div ref={mountRef} className="solar-system-three-scene" aria-label="Three.js 太阳系运转 3D 场景" />;

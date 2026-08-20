@@ -219,6 +219,24 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules/three")) {
+            return "three-vendor";
+          }
+          if (id.includes("node_modules/lucide-react")) {
+            return "icons-vendor";
+          }
+          if (id.includes("node_modules/@radix-ui")) {
+            return "ui-vendor";
+          }
+          if (id.includes("client/src/data/skyData.ts")) {
+            return "sky-data";
+          }
+        },
+      },
+    },
   },
   server: {
     port: 3000,

@@ -2,11 +2,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { Camera, CheckCircle2, CircleUserRound, Compass, Crosshair, LocateFixed, Moon, Radio, RotateCcw, Sun, Telescope } from "lucide-react";
-import html2canvas from "html2canvas";
 import { SKY_DATA } from "@/data/skyData";
-
-type Vec3 = { x: number; y: number; z: number };
-type Projected = Vec3 & { sx: number; sy: number; visible: boolean };
+import {
+  type Vec3,
+  type Projected,
+  toVector,
+  project,
+  starColor,
+  normalize,
+  vectorToRaDec,
+  localSiderealHours,
+  getSolarObjects,
+} from "@/lib/astronomy";
 
 const FEATURED = ["ori", "uma", "cas", "cyg", "sco", "leo", "gem", "tau", "lyr", "sgr", "and", "peg"];
 const DEFAULT_VISUAL_INTENSITY = "strong" as const;
@@ -22,74 +29,6 @@ const SCIENTIST_SLOTS = [
 ];
 const STAR_COUNT = SKY_DATA.meta.starCount;
 const CONSTELLATION_COUNT = SKY_DATA.meta.constellationCount;
-
-function toVector(ra: number, dec: number): Vec3 {
-  const r = (ra / 24) * Math.PI * 2;
-  const d = (dec * Math.PI) / 180;
-  return { x: Math.cos(d) * Math.cos(r), y: Math.sin(d), z: Math.cos(d) * Math.sin(r) };
-}
-
-function project(vector: Vec3, yaw: number, pitch: number, width: number, height: number, zoom: number): Projected {
-  const cy = Math.cos(yaw), sy = Math.sin(yaw);
-  const cp = Math.cos(pitch), sp = Math.sin(pitch);
-  const x1 = vector.x * cy - vector.z * sy;
-  const z1 = vector.x * sy + vector.z * cy;
-  const y1 = vector.y * cp - z1 * sp;
-  const z2 = vector.y * sp + z1 * cp;
-  const az = Math.atan2(x1, z2);
-  const alt = Math.asin(Math.max(-1, Math.min(1, y1)));
-  const fovX = Math.min(Math.PI * 1.65, (Math.PI * 1.65) / zoom);
-  const fovY = Math.min(Math.PI * 0.95, (Math.PI * 0.95) / zoom);
-  const visible = Math.abs(az) < fovX / 2 && Math.abs(alt) < fovY / 2;
-  return { x: x1, y: y1, z: z2, sx: width / 2 + (az / fovX) * width, sy: height / 2 - (alt / fovY) * height, visible };
-}
-
-function starColor(ci: number) {
-  if (ci < 0.25) return "#b9d9f0";
-  if (ci > 1.05) return "#f0b56f";
-  if (ci > 0.75) return "#efca88";
-  return "#f0f1df";
-}
-
-function normalize(vector: Vec3): Vec3 {
-  const length = Math.hypot(vector.x, vector.y, vector.z) || 1;
-  return { x: vector.x / length, y: vector.y / length, z: vector.z / length };
-}
-function vectorToRaDec(vector: Vec3) {
-  const unit = normalize(vector);
-  return { ra: ((Math.atan2(unit.z, unit.x) * 12) / Math.PI + 24) % 24, dec: (Math.asin(unit.y) * 180) / Math.PI };
-}
-
-function dateToJulian(date: Date) { return date.getTime() / 86400000 + 2440587.5; }
-function localSiderealHours(date: Date, longitude: number) {
-  const jd = dateToJulian(date);
-  const t = (jd - 2451545.0) / 36525;
-  const gmst = (280.46061837 + 360.98564736629 * (jd - 2451545.0) + 0.000387933 * t * t) % 360;
-  return ((gmst + longitude) / 15 + 24) % 24;
-}
-
-const SOLAR_OBJECTS = [
-  { id: "sun", name: "太阳", latin: "SUN", color: "#ffd875", size: 5.5, baseRa: 0, baseDec: 0 },
-  { id: "virtual-sun-a", name: "曜灵", latin: "YAO-LING", color: "#ffd875", size: 5.5, baseRa: 10.8, baseDec: -8 },
-  { id: "virtual-sun-b", name: "烬环", latin: "JIN-HUAN", color: "#ffd875", size: 5.5, baseRa: 15.2, baseDec: 12 },
-  { id: "virtual-sun-c", name: "星烛", latin: "XING-ZHU", color: "#ffd875", size: 5.5, baseRa: 20.4, baseDec: 4 },
-  { id: "moon", name: "月球", latin: "MOON", color: "#d7e8e4", size: 4.2, baseRa: 3.2, baseDec: 8 },
-  { id: "mercury", name: "水星", latin: "MERCURY", color: "#d1aa83", size: 2.8, baseRa: 4.7, baseDec: 18 },
-  { id: "venus", name: "金星", latin: "VENUS", color: "#ffe3a0", size: 3.8, baseRa: 5.1, baseDec: 21 },
-  { id: "mars", name: "火星", latin: "MARS", color: "#e77d61", size: 3.3, baseRa: 8.8, baseDec: 23 },
-  { id: "jupiter", name: "木星", latin: "JUPITER", color: "#e9c99b", size: 4.5, baseRa: 4.4, baseDec: 20 },
-  { id: "saturn", name: "土星", latin: "SATURN", color: "#d9c28b", size: 4, baseRa: 22.1, baseDec: -12 },
-];
-
-function getSolarObjects(date: Date) {
-  const days = dateToJulian(date) - 2451545;
-  return SOLAR_OBJECTS.map((object, index) => {
-    const drift = (days / (index === 0 ? 365.25 : 87.97 + index * 140)) * 24;
-    const ra = (object.baseRa + drift) % 24;
-    const dec = object.baseDec + Math.sin(days / (35 + index * 17)) * (index === 0 ? 23 : 8);
-    return { ...object, ra: (ra + 24) % 24, dec, vector: toVector((ra + 24) % 24, dec) };
-  });
-}
 
 const PLANET_IDS = new Set(["sun", "mercury", "venus", "mars", "jupiter", "saturn"]);
 const VIRTUAL_SUN_IDS = new Set(["virtual-sun-a", "virtual-sun-b", "virtual-sun-c"]);
@@ -195,6 +134,7 @@ export default function Home() {
   };
   const captureObservatory = async () => {
     try {
+      const html2canvas = (await import("html2canvas")).default;
       const snapshot = await html2canvas(document.documentElement, { backgroundColor: null, useCORS: true, logging: false, scale: Math.min(2, window.devicePixelRatio || 1), windowWidth: document.documentElement.scrollWidth, windowHeight: document.documentElement.scrollHeight });
       const stamp = new Date();
       const pad = (value: number) => String(value).padStart(2, "0");
