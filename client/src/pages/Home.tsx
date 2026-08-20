@@ -74,7 +74,7 @@ export default function Home() {
   const [latitude, setLatitude] = useState(31.23);
   const [longitude, setLongitude] = useState(121.47);
   const [showSolar, setShowSolar] = useState(true);
-  const [showVirtualSuns, setShowVirtualSuns] = useState(false);
+  const [showVirtualSuns, setShowVirtualSuns] = useState(true);
   const [showMessier, setShowMessier] = useState(true);
   const displayStarCount = fullDataLoaded ? skyData.meta.starCount : (skyData.meta.initialStarCount ?? skyData.meta.starCount);
   const displayConstellationCount = fullDataLoaded ? skyData.meta.constellationCount : (skyData.meta.initialConstellationCount ?? skyData.meta.constellationCount);
@@ -218,7 +218,7 @@ export default function Home() {
     setScientistNotice("");
     setScientistCelebration(false);
     setVisualIntensity(DEFAULT_VISUAL_INTENSITY);
-    setShowVirtualSuns(false);
+    setShowVirtualSuns(true);
   };
 
   const stars = useMemo(() => skyData.stars.map((star) => ({ ...star, vector: toVector(star.ra, star.dec) })), []);
