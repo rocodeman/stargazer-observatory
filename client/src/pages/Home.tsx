@@ -16,8 +16,9 @@ const SCIENTIST_PROFILES = [
   { id: 2, scale: 1.24, lean: 26, bodyWidth: 46, bodyHeight: 56, arm: 38, leg: 24 },
 ];
 const SCIENTIST_SLOTS = [
-  { left: "16%", top: "34%" }, { left: "38%", top: "66%" }, { left: "57%", top: "30%" },
-  { left: "76%", top: "68%" }, { left: "86%", top: "36%" }, { left: "67%", top: "60%" },
+  { left: "11%", top: "23%" }, { left: "24%", top: "57%" }, { left: "39%", top: "18%" },
+  { left: "53%", top: "42%" }, { left: "68%", top: "25%" }, { left: "82%", top: "63%" },
+  { left: "91%", top: "36%" }, { left: "31%", top: "78%" }, { left: "61%", top: "74%" },
 ];
 const STAR_COUNT = SKY_DATA.meta.starCount;
 const CONSTELLATION_COUNT = SKY_DATA.meta.constellationCount;
