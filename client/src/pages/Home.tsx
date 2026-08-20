@@ -277,10 +277,12 @@ export default function Home() {
     if (!canvas) return;
     let disposed = false;
     let frame = 0;
+    const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8;
+    const lowPower = (navigator.hardwareConcurrency ?? 8) <= 4 || deviceMemory <= 4 || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const render = () => {
       if (disposed) return;
       const rect = canvas.getBoundingClientRect();
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = Math.min(window.devicePixelRatio || 1, lowPower ? 1 : 1.5);
       const width = rect.width;
       const height = rect.height;
       if (width <= 0 || height <= 0) {
@@ -300,15 +302,20 @@ export default function Home() {
       else { gradient.addColorStop(0, "#173a55"); gradient.addColorStop(.42, "#0d2739"); gradient.addColorStop(1, "#050d15"); }
       ctx.fillStyle = gradient; ctx.fillRect(0, 0, width, height);
       const projected = new Map<number, Projected>();
-      for (const star of stars) {
+      for (let starIndex = 0; starIndex < stars.length; starIndex += 1) {
+        const star = stars[starIndex];
         const p = project(star.vector, skyYaw, pitch, width, height, zoom);
+        if (lowPower && starIndex % 2 === 1) {
+          projected.set(star.hr, p);
+          continue;
+        }
         projected.set(star.hr, p);
         if (!p.visible || p.sx < -12 || p.sx > width + 12 || p.sy < -12 || p.sy > height + 12) continue;
         const radius = Math.max(.38, Math.min(3.2, 2.7 - star.mag * .34)) * (star.mag < 2.6 ? 1.15 : 1);
         const visibility = dayMode ? (star.mag < 0.5 ? .32 : .045) : environment === "city" ? (star.mag < 2.4 ? .72 : .22) : 1;
         ctx.globalAlpha = Math.max(.08, Math.min(.96, (1.15 - (star.mag + 1.5) / 8) * visibility));
         ctx.fillStyle = starColor(star.ci);
-        ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = star.mag < 2.7 ? 7 : 1.5;
+        ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = lowPower ? 0 : (star.mag < 2.7 ? 7 : 1.5);
         ctx.beginPath(); ctx.arc(p.sx, p.sy, radius, 0, Math.PI * 2); ctx.fill();
       }
       ctx.shadowBlur = 0; ctx.globalAlpha = 1;
@@ -316,7 +323,7 @@ export default function Home() {
         for (const object of solarObjects) {
           const p = project(object.vector, skyYaw, pitch, width, height, zoom);
           if (!p.visible) continue;
-          ctx.fillStyle = object.color; ctx.shadowColor = object.color; ctx.shadowBlur = 13;
+          ctx.fillStyle = object.color; ctx.shadowColor = object.color;           ctx.shadowBlur = lowPower ? 5 : 13;
           ctx.beginPath(); ctx.arc(p.sx, p.sy, object.size, 0, Math.PI * 2); ctx.fill();
           if (showNames) { ctx.shadowBlur = 0; ctx.font = "500 10px IBM Plex Mono"; ctx.fillText(object.name, p.sx + 8, p.sy - 7); }
         }
@@ -361,7 +368,7 @@ export default function Home() {
           ctx.font = constellation.id === current.id ? "500 13px 'Noto Sans SC'" : "500 10px 'Noto Sans SC'";
           ctx.fillStyle = visualIntensity === "strong" ? (constellation.id === current.id ? "#e7b96a" : "rgba(224,234,228,.9)") : "rgba(184,199,192,.58)";
           ctx.shadowColor = "rgba(4,12,18,.95)";
-          ctx.shadowBlur = visualIntensity === "strong" ? 7 : 4;
+          ctx.shadowBlur = lowPower ? 0 : (visualIntensity === "strong" ? 7 : 4);
           ctx.fillText(constellation.name, candidate.x, candidate.y);
           ctx.font = "500 8px 'IBM Plex Mono'";
           ctx.fillStyle = visualIntensity === "strong" ? "#e7b96a" : "rgba(145,190,192,.55)";

@@ -86,9 +86,9 @@ const BODIES: BodyDef[] = [
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
-function makeOrbitLine(radius: number): THREE.LineLoop {
-  const pts = Array.from({ length: 128 }, (_, i) => {
-    const a = (i / 128) * Math.PI * 2;
+function makeOrbitLine(radius: number, segments = 128): THREE.LineLoop {
+  const pts = Array.from({ length: segments }, (_, i) => {
+    const a = (i / segments) * Math.PI * 2;
     return new THREE.Vector3(Math.cos(a) * radius, 0, Math.sin(a) * radius);
   });
   const geo = new THREE.BufferGeometry().setFromPoints(pts);
@@ -143,8 +143,11 @@ export default function SolarSystemThreeScene({ running, speed, onFocus }: Props
     if (!mount) return;
 
     // ── Renderer ──────────────────────────────────────────────────────────────
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8;
+    const lowPower = (navigator.hardwareConcurrency ?? 8) <= 4 || deviceMemory <= 4;
+    const geometrySegments = lowPower ? 24 : 48;
+    const renderer = new THREE.WebGLRenderer({ antialias: !lowPower, alpha: true, powerPreference: lowPower ? "default" : "high-performance" });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, lowPower ? 1 : 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.15;
@@ -164,7 +167,7 @@ export default function SolarSystemThreeScene({ running, speed, onFocus }: Props
     scene.add(system);
 
     // ── Sun ───────────────────────────────────────────────────────────────────
-    const sunGeo  = new THREE.SphereGeometry(0.84, 64, 40);
+    const sunGeo  = new THREE.SphereGeometry(0.84, lowPower ? 32 : 64, lowPower ? 24 : 40);
     const sunMat  = new THREE.MeshBasicMaterial({ map: getTexture("/textures/sun_surface.jpg") });
     const sun     = new THREE.Mesh(sunGeo, sunMat);
     sun.userData  = { name: "太阳" };
@@ -178,7 +181,7 @@ export default function SolarSystemThreeScene({ running, speed, onFocus }: Props
     ];
     for (const def of coronaDefs) {
       const m = new THREE.Mesh(
-        new THREE.SphereGeometry(0.84 * def.scale, 32, 24),
+        new THREE.SphereGeometry(0.84 * def.scale, lowPower ? 16 : 32, lowPower ? 12 : 24),
         new THREE.MeshBasicMaterial({
           color: def.color, transparent: true, opacity: def.opacity,
           side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false,
@@ -188,7 +191,7 @@ export default function SolarSystemThreeScene({ running, speed, onFocus }: Props
     }
 
     // Wide glow sprite
-    const glowTex = makeSunGlowTexture(512);
+    const glowTex = makeSunGlowTexture(lowPower ? 256 : 512);
     const glowSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, blending: THREE.AdditiveBlending, transparent: true, opacity: 0.85 }));
     glowSprite.scale.setScalar(4.8);
     system.add(glowSprite);
@@ -207,7 +210,7 @@ export default function SolarSystemThreeScene({ running, speed, onFocus }: Props
 
     const bodyInstances: BodyInstance[] = BODIES.map((def, idx) => {
       // Orbit line
-      system.add(makeOrbitLine(def.orbitR));
+      system.add(makeOrbitLine(def.orbitR, lowPower ? 64 : 128));
 
       // Orbit group (rotates around sun)
       const orbitGroup = new THREE.Group();
@@ -229,7 +232,7 @@ export default function SolarSystemThreeScene({ running, speed, onFocus }: Props
         roughness: 0.78,
         metalness: 0.02,
       });
-      const mesh = new THREE.Mesh(new THREE.SphereGeometry(def.size, 48, 32), mat);
+      const mesh = new THREE.Mesh(new THREE.SphereGeometry(def.size, geometrySegments, lowPower ? 20 : 32), mat);
       mesh.userData = { name: def.name };
       clickables.push(mesh);
       pivot.add(mesh);
@@ -238,7 +241,7 @@ export default function SolarSystemThreeScene({ running, speed, onFocus }: Props
       let cloudMesh: THREE.Mesh | undefined;
       if (def.cloudMap) {
         cloudMesh = new THREE.Mesh(
-          new THREE.SphereGeometry(def.size * 1.007, 48, 32),
+          new THREE.SphereGeometry(def.size * 1.007, geometrySegments, lowPower ? 20 : 32),
           new THREE.MeshStandardMaterial({
             map: getTexture(def.cloudMap),
             transparent: true,
@@ -259,7 +262,7 @@ export default function SolarSystemThreeScene({ running, speed, onFocus }: Props
       // Ring system (Saturn / Uranus)
       if (def.rings) {
         const { innerR, outerR, textureMap } = def.rings;
-        const ringGeo = new THREE.RingGeometry(innerR, outerR, 128);
+        const ringGeo = new THREE.RingGeometry(innerR, outerR, lowPower ? 64 : 128);
         // Remap UV so texture maps radially from inner to outer edge
         const pos  = ringGeo.attributes.position as THREE.BufferAttribute;
         const uv   = ringGeo.attributes.uv as THREE.BufferAttribute;
@@ -290,7 +293,7 @@ export default function SolarSystemThreeScene({ running, speed, onFocus }: Props
         const moonOrbit = new THREE.Group();
         moonOrbit.rotation.y = Math.random() * Math.PI * 2;
         const moonMesh = new THREE.Mesh(
-          new THREE.SphereGeometry(moonDef.size, 24, 16),
+          new THREE.SphereGeometry(moonDef.size, lowPower ? 12 : 24, lowPower ? 8 : 16),
           (() => {
             const moonTexture = getTexture(moonDef.textureMap);
             return new THREE.MeshStandardMaterial({
@@ -316,7 +319,8 @@ export default function SolarSystemThreeScene({ running, speed, onFocus }: Props
     });
 
     // ── Background stars ───────────────────────────────────────────────────────
-    const starPositions = new Float32Array(2000 * 3);
+    const starCount = lowPower ? 700 : 2000;
+    const starPositions = new Float32Array(starCount * 3);
     for (let i = 0; i < starPositions.length; i += 3) {
       const r = 22 + (i % 29);
       const th = i * 0.47;

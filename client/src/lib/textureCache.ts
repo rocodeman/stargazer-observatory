@@ -4,10 +4,8 @@
  * after route navigation.
  */
 import * as THREE from "three";
-
 const loader = new THREE.TextureLoader();
 const cache = new Map<string, THREE.Texture>();
-
 /**
  * Load a texture by path (relative to /public), caching the result.
  * Subsequent calls for the same path return the cached GPU texture immediately.
@@ -19,7 +17,6 @@ export function getTexture(path: string): THREE.Texture {
   cache.set(path, texture);
   return texture;
 }
-
 /**
  * Dispose all cached textures and clear the cache.
  * Call this only when the entire app is tearing down, NOT on component unmount

@@ -24,4 +24,6 @@ if screenshot.exists():
 # Re-encode texture JPEGs at quality 78. Keep dimensions unchanged for stable UV mapping.
 for source in sorted((root / 'client' / 'public' / 'textures').glob('*.jpg')):
     image = Image.open(source).convert('RGB')
-    image.save(source, 'JPEG', quality=78, optimize=True, progressive=True)
+    if image.width > 1024:
+        image = image.resize((1024, max(1, round(image.height * 1024 / image.width))), Image.Resampling.LANCZOS)
+    image.save(source, 'JPEG', quality=76, optimize=True, progressive=True)
