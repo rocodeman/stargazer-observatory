@@ -747,24 +747,66 @@ button:focus-visible { outline:1px solid var(--brass); outline-offset:3px; }
 }
 
 
-/* 三体终局视觉：黑暗森林是持续存在的观测结论，半透明叠在天球之上但不拦截任何操作。 */
+/* 三体终局视觉：第二部信息以半透明观测记录叠在天球之上，但不拦截任何操作。 */
 .dark-forest-title {
   position: fixed;
   z-index: 4;
   left: 50%;
   top: 48%;
   transform: translate(-50%, -50%);
+  width: min(760px, calc(100vw - 360px));
   pointer-events: none;
-  white-space: nowrap;
-  color: rgba(226, 235, 226, .22);
+  color: rgba(226, 235, 226, .78);
   font-family: "Noto Sans SC", sans-serif;
-  font-size: clamp(4rem, 12vw, 10rem);
-  font-weight: 800;
-  letter-spacing: .18em;
-  line-height: 1;
-  text-shadow: 0 0 28px rgba(163, 204, 193, .12), 0 2px 18px rgba(0, 0, 0, .55);
+  text-align: center;
   user-select: none;
+  text-shadow: 0 0 28px rgba(163, 204, 193, .12), 0 2px 18px rgba(0, 0, 0, .55);
+}
+.dark-forest-title h2 {
+  margin: 0;
+  color: rgba(231, 185, 106, .76);
+  font-size: clamp(2rem, 4.8vw, 4.5rem);
+  font-weight: 800;
+  letter-spacing: .12em;
+  line-height: 1.2;
+}
+.dark-forest-events {
+  display: grid;
+  gap: 5px;
+  margin: 22px auto 16px;
+  padding: 12px 18px;
+  border-top: 1px solid rgba(163, 204, 193, .22);
+  border-bottom: 1px solid rgba(163, 204, 193, .22);
+  color: rgba(226, 235, 226, .58);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: clamp(.62rem, 1.1vw, .78rem);
+  letter-spacing: .08em;
+  line-height: 1.6;
+}
+.dark-forest-events span::before { content: "· "; color: rgba(231, 185, 106, .72); }
+.dark-forest-ending {
+  display: block;
+  margin-bottom: 12px;
+  color: rgba(231, 185, 106, .7);
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  font-weight: 600;
+  letter-spacing: .38em;
+}
+.dark-forest-title a {
+  color: rgba(163, 204, 193, .58);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: clamp(.55rem, .9vw, .7rem);
+  letter-spacing: .04em;
+  pointer-events: auto;
+  text-decoration: none;
+}
+.dark-forest-title a:hover { color: rgba(231, 185, 106, .86); text-decoration: underline; }
+@media (max-width: 860px) {
+  .dark-forest-title { width: min(680px, calc(100vw - 40px)); top: 45%; }
 }
 @media (max-width: 640px) {
-  .dark-forest-title { top: 44%; font-size: clamp(2.8rem, 15vw, 5rem); letter-spacing: .1em; }
+  .dark-forest-title { top: 42%; width: calc(100vw - 32px); }
+  .dark-forest-title h2 { font-size: clamp(1.55rem, 8vw, 2.8rem); letter-spacing: .08em; }
+  .dark-forest-events { margin-top: 14px; padding: 9px 10px; font-size: .56rem; letter-spacing: .02em; }
+  .dark-forest-ending { margin-bottom: 9px; font-size: .9rem; }
 }
