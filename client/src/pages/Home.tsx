@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { Camera, CheckCircle2, CircleUserRound, Compass, Crosshair, LocateFixed, Moon, Radio, RotateCcw, Sun, Telescope } from "lucide-react";
-import { SKY_DATA } from "@/data/skyData";
+import { SKY_DATA as INITIAL_SKY_DATA } from "@/data/skyDataCore";
 import {
   type Vec3,
   type Projected,
@@ -15,6 +15,11 @@ import {
   getSolarObjects,
 } from "@/lib/astronomy";
 
+type SkyData = {
+  stars: ReadonlyArray<{ hr: number; ra: number; dec: number; mag: number; ci: number }>;
+  constellations: ReadonlyArray<{ id: string; abbr: string; name: string; latin: string; points: ReadonlyArray<number> }>;
+  meta: { starCount: number; constellationCount: number; source: string; initialStarCount?: number; initialConstellationCount?: number };
+};
 const FEATURED = ["ori", "uma", "cas", "cyg", "sco", "leo", "gem", "tau", "lyr", "sgr", "and", "peg"];
 const DEFAULT_VISUAL_INTENSITY = "soft" as const;
 const INITIAL_CONSTELLATION_IDS = [...FEATURED, "aur", "per", "mon", "vir", "lib", "cap", "aqr", "psc"];
@@ -28,8 +33,6 @@ const SCIENTIST_SLOTS = [
   { left: "53%", top: "42%" }, { left: "68%", top: "25%" }, { left: "82%", top: "63%" },
   { left: "91%", top: "36%" }, { left: "31%", top: "78%" }, { left: "61%", top: "74%" },
 ];
-const STAR_COUNT = SKY_DATA.meta.starCount;
-const CONSTELLATION_COUNT = SKY_DATA.meta.constellationCount;
 
 const PLANET_IDS = new Set(["sun", "mercury", "venus", "mars", "jupiter", "saturn"]);
 const VIRTUAL_SUN_IDS = new Set(["virtual-sun-a", "virtual-sun-b", "virtual-sun-c"]);
@@ -58,6 +61,8 @@ export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [, navigate] = useLocation();
   const drag = useRef({ active: false, moved: false, x: 0, y: 0, yaw: 0, pitch: 0 });
+  const [skyData, setSkyData] = useState<SkyData>(INITIAL_SKY_DATA as SkyData);
+  const [fullDataLoaded, setFullDataLoaded] = useState(false);
   const [active, setActive] = useState("ori");
   const [showLines, setShowLines] = useState(true);
   const [selectedConstellations, setSelectedConstellations] = useState<Set<string>>(() => new Set(INITIAL_CONSTELLATION_IDS));
@@ -71,6 +76,8 @@ export default function Home() {
   const [showSolar, setShowSolar] = useState(true);
   const [showVirtualSuns, setShowVirtualSuns] = useState(false);
   const [showMessier, setShowMessier] = useState(true);
+  const displayStarCount = fullDataLoaded ? skyData.meta.starCount : (skyData.meta.initialStarCount ?? skyData.meta.starCount);
+  const displayConstellationCount = fullDataLoaded ? skyData.meta.constellationCount : (skyData.meta.initialConstellationCount ?? skyData.meta.constellationCount);
   const [dayMode, setDayMode] = useState(false);
   const [visualIntensity, setVisualIntensity] = useState<"strong" | "soft">(DEFAULT_VISUAL_INTENSITY);
   const [selectedBody, setSelectedBody] = useState<{ id: string; name: string; latin: string; detail: { type: string; distance: string; magnitude: string; description: string } } | null>(null);
@@ -103,6 +110,14 @@ export default function Home() {
   const [triadComplete, setTriadComplete] = useState(() => typeof window !== "undefined" && window.localStorage.getItem("stargazer.task.threeSuns") === "complete");
   const [highlightModeCount, setHighlightModeCount] = useState(() => Math.min(3, Number(window.localStorage.getItem("stargazer.task.shineForYou.modeCount") || 0)));
   const shineComplete = highlightModeCount >= 3;
+  const loadFullSkyData = async () => {
+    if (fullDataLoaded) return skyData;
+    const module = await import("@/data/skyData");
+    const fullData = module.SKY_DATA as unknown as SkyData;
+    setSkyData(fullData);
+    setFullDataLoaded(true);
+    return fullData;
+  };
   const scienceBoundaryComplete = scientistsFound.size === scientistTargets.length;
   const scientistNoticeTimer = useRef<number | null>(null);
   useEffect(() => {
@@ -128,7 +143,7 @@ export default function Home() {
       return nextMode;
     });
   };
-  const highlightConstellation = (item: typeof SKY_DATA.constellations[number]) => {
+  const highlightConstellation = (item: typeof skyData.constellations[number]) => {
     setSelectedConstellations((previous) => { const next = new Set(previous); next.add(item.id); return next; });
     setActive(item.id);
     setFocusTarget(item.id);
@@ -206,18 +221,21 @@ export default function Home() {
     setShowVirtualSuns(false);
   };
 
-  const stars = useMemo(() => SKY_DATA.stars.map((star) => ({ ...star, vector: toVector(star.ra, star.dec) })), []);
+  const stars = useMemo(() => skyData.stars.map((star) => ({ ...star, vector: toVector(star.ra, star.dec) })), []);
   const byHr = useMemo(() => new Map(stars.map((star) => [star.hr, star])), [stars]);
-  const current = SKY_DATA.constellations.find((item) => item.id === active) ?? SKY_DATA.constellations[0];
-  const featured = FEATURED.map((id) => SKY_DATA.constellations.find((item) => item.id === id)).filter((item): item is typeof SKY_DATA.constellations[number] => Boolean(item));
-  const allConstellationsSelected = selectedConstellations.size === SKY_DATA.constellations.length;
+  const current = skyData.constellations.find((item) => item.id === active) ?? skyData.constellations[0];
+  const featured = FEATURED.map((id) => skyData.constellations.find((item) => item.id === id)).filter((item): item is typeof skyData.constellations[number] => Boolean(item));
+  const allConstellationsSelected = selectedConstellations.size === skyData.constellations.length;
   const observationDate = useMemo(() => new Date(observerDate), [observerDate]);
   const sidereal = useMemo(() => localSiderealHours(observationDate, longitude), [observationDate, longitude]);
   const solarObjects = useMemo(() => getSolarObjects(observationDate), [observationDate]);
   const query = search.trim().toLowerCase();
-  const searchResults = query ? [...SKY_DATA.constellations.map((item) => ({ id: item.id, name: item.name, latin: item.abbr, vector: normalize(item.points.map((hr) => byHr.get(hr)?.vector).filter((v): v is Vec3 => Boolean(v)).reduce<Vec3>((acc, v) => ({ x: acc.x + v.x, y: acc.y + v.y, z: acc.z + v.z }), { x: 0, y: 0, z: 0 })) })), ...solarObjects.map((item) => ({ id: item.id, name: item.name, latin: item.latin, vector: item.vector })), ...MESSIER_OBJECTS.map((item) => ({ id: item.id, name: item.name, latin: item.latin, vector: item.vector }))].filter((item) => `${item.name} ${item.latin}`.toLowerCase().includes(query)).slice(0, 8) : [];
+  const searchResults = query ? [...skyData.constellations.map((item) => ({ id: item.id, name: item.name, latin: item.abbr, vector: normalize(item.points.map((hr) => byHr.get(hr)?.vector).filter((v): v is Vec3 => Boolean(v)).reduce<Vec3>((acc, v) => ({ x: acc.x + v.x, y: acc.y + v.y, z: acc.z + v.z }), { x: 0, y: 0, z: 0 })) })), ...solarObjects.map((item) => ({ id: item.id, name: item.name, latin: item.latin, vector: item.vector })), ...MESSIER_OBJECTS.map((item) => ({ id: item.id, name: item.name, latin: item.latin, vector: item.vector }))].filter((item) => `${item.name} ${item.latin}`.toLowerCase().includes(query)).slice(0, 8) : [];
   const skyYaw = yaw + (sidereal / 24) * Math.PI * 2;
 
+  useEffect(() => {
+    if (search.trim() && !fullDataLoaded) void loadFullSkyData();
+  }, [search, fullDataLoaded]);
   useEffect(() => {
     if (timeRate === 0) return;
     const timer = window.setInterval(() => {
@@ -265,12 +283,15 @@ export default function Home() {
     setCameraTarget({ yaw: (coordinates.ra / 24) * Math.PI * 2 - (sidereal / 24) * Math.PI * 2, pitch: (coordinates.dec * Math.PI) / 180 });
     if (nextActive) { setActive(nextActive); setFocusTarget(nextActive); }
   };
-  const toggleConstellation = (item: typeof SKY_DATA.constellations[number]) => {
+  const toggleConstellation = (item: typeof skyData.constellations[number]) => {
     setSelectedConstellations((previous) => { const next = new Set(previous); if (next.has(item.id)) next.delete(item.id); else next.add(item.id); return next; });
     focusConstellation(item);
   };
-  const toggleAllConstellations = () => setSelectedConstellations((previous) => previous.size === SKY_DATA.constellations.length ? new Set() : new Set(SKY_DATA.constellations.map((item) => item.id)));
-  const focusConstellation = (item: typeof SKY_DATA.constellations[number]) => {
+  const toggleAllConstellations = async () => {
+    const data = await loadFullSkyData();
+    setSelectedConstellations((previous) => previous.size === data.constellations.length ? new Set() : new Set(data.constellations.map((item) => item.id)));
+  };
+  const focusConstellation = (item: typeof skyData.constellations[number]) => {
     const vector = normalize(item.points.map((hr) => byHr.get(hr)?.vector).filter((v): v is Vec3 => Boolean(v)).reduce<Vec3>((acc, v) => ({ x: acc.x + v.x, y: acc.y + v.y, z: acc.z + v.z }), { x: 0, y: 0, z: 0 }));
     rotateToVector(vector, item.id);
   };
@@ -342,7 +363,7 @@ export default function Home() {
         }
       }
       ctx.shadowBlur = 0; ctx.globalAlpha = 1;
-      const constellationLayers = SKY_DATA.constellations.filter((constellation) => selectedConstellations.has(constellation.id));
+      const constellationLayers = skyData.constellations.filter((constellation) => selectedConstellations.has(constellation.id));
       if (showLines) {
         for (const constellation of constellationLayers) {
           for (let index = 0; index < constellation.points.length - 1; index += 1) {
@@ -441,7 +462,7 @@ export default function Home() {
       setSelectedBody(nearest);
       return;
     }
-    let nearestConstellation: { item: typeof SKY_DATA.constellations[number]; distance: number } | null = null;
+    let nearestConstellation: { item: typeof skyData.constellations[number]; distance: number } | null = null;
     const distanceToSegment = (px: number, py: number, ax: number, ay: number, bx: number, by: number) => {
       const dx = bx - ax;
       const dy = by - ay;
@@ -449,7 +470,7 @@ export default function Home() {
       const projection = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / lengthSquared));
       return Math.hypot(px - (ax + projection * dx), py - (ay + projection * dy));
     };
-    for (const item of SKY_DATA.constellations) {
+    for (const item of skyData.constellations) {
       const points = item.points.map((hr) => project(byHr.get(hr)?.vector ?? { x: 0, y: 0, z: 0 }, skyYaw, pitch, rect.width, rect.height, zoom)).filter((point) => point.visible);
       if (!points.length) continue;
       let shapeDistance = Infinity;
@@ -476,8 +497,8 @@ export default function Home() {
       {label && <div className="constellation-label" style={{ left: label.x, top: label.y }}><span>{label.latin}</span><strong>{label.name}</strong></div>}
       {selectedBody && <aside className="body-detail"><button className="detail-close" onClick={() => setSelectedBody(null)} aria-label="关闭详情">×</button><div className="readout-label">CELESTIAL OBJECT · {selectedBody.latin}</div><h2>{selectedBody.name}</h2><div className="detail-type">{selectedBody.detail.type}</div><div className="detail-stats"><span><small>DISTANCE</small>{selectedBody.detail.distance}</span><span><small>MAGNITUDE</small>{selectedBody.detail.magnitude}</span></div><p>{selectedBody.detail.description}</p><button className="detail-focus travel-focus" onClick={() => { if (PLANET_IDS.has(selectedBody.id)) navigate(`/travel/${selectedBody.id}`); else { const target = [...solarObjects, ...MESSIER_OBJECTS].find((item) => item.id === selectedBody.id); if (target) rotateToVector(target.vector); } }}>{PLANET_IDS.has(selectedBody.id) ? <>开始星际旅行 <Telescope size={14} /></> : <>转到目标位置 <LocateFixed size={14} /></>}</button>{PLANET_IDS.has(selectedBody.id) && <button className="detail-focus solar-orbit-focus" onClick={() => { if (selectedBody.id === "sun" && dayMode) window.localStorage.setItem("stargazer.broadcast.sunDayAccess", "authorized"); navigate(`/solar-system?focus=${selectedBody.id}`); }}><RotateCcw size={14} />查看太阳系运转</button>}</aside>}
       <aside className="character-panel"><div className="character-profile"><div className="character-avatar"><CircleUserRound size={25} /></div><div><span>OBSERVATORY PILOT</span><strong>任务面板</strong></div></div><div className="character-divider" /><div className="mission-panel-kicker"><Radio size={13} /> 任务 · 5</div><div className={`mission-item ${triadComplete ? "complete" : "incomplete"}`} role="button" tabIndex={0} onClick={() => setShowVirtualSuns(true)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") setShowVirtualSuns(true); }}><span className="mission-status">{triadComplete ? <CheckCircle2 size={16} /> : <span className="mission-ring" />}</span><div><strong>三个太阳</strong><small>{triadComplete ? "已完成" : "未完成"}</small></div><em>{triadComplete ? "COMPLETE" : "ACTIVE"}</em></div><div className={`mission-item ${broadcastComplete ? "complete" : "incomplete"}`}><span className="mission-status">{broadcastComplete ? <CheckCircle2 size={16} /> : <span className="mission-ring" />}</span><div><strong>宇宙广播</strong><small>{broadcastComplete ? "已完成" : "未完成"}</small></div><em>{broadcastComplete ? "COMPLETE" : "ACTIVE"}</em></div><div className={`mission-item ${scienceBoundaryComplete ? "complete" : "incomplete"}`}><span className="mission-status">{scienceBoundaryComplete ? <CheckCircle2 size={16} /> : <span className="mission-ring" />}</span><div><strong>科学家的葬礼</strong><small>{scienceBoundaryComplete ? "已完成" : `还需发现 ${scientistTargets.length - scientistsFound.size} 位完成`}</small></div><em>{scienceBoundaryComplete ? "COMPLETE" : "ACTIVE"}</em></div><div className={`mission-item ${countdownComplete ? "complete" : "incomplete"}`}><span className="mission-status">{countdownComplete ? <CheckCircle2 size={16} /> : <span className="mission-ring" />}</span><div><strong>倒计时</strong><small>{countdownComplete ? "已完成" : "未完成"}</small></div><em>{countdownComplete ? "COMPLETE" : "ACTIVE"}</em></div><div className={`mission-item ${shineComplete ? "complete" : "incomplete"}`}><span className="mission-status">{shineComplete ? <CheckCircle2 size={16} /> : <span className="mission-ring" />}</span><div><strong>为你闪耀</strong><small>{shineComplete ? "已完成" : "未完成"}</small></div><em>{shineComplete ? "COMPLETE" : "ACTIVE"}</em></div><button type="button" className="mission-replay" onClick={replayMissions}><RotateCcw size={12} /> 重玩</button></aside>
-      <header className="topbar"><div className="brand"><button className="brand-camera-button" onClick={captureObservatory} aria-label="拍摄天文台截图" title="拍摄天文台截图"><Camera size={18} /></button><div><div className="eyebrow">NIGHT OBSERVATORY · 3D SKY</div><h1>三体</h1></div></div><div className="status"><span className="status-dot" /> HYG v4.1 · {STAR_COUNT.toLocaleString()} STARS <b>·</b> {CONSTELLATION_COUNT} CONSTELLATIONS</div><button className="icon-button" onClick={toggleDayNight} aria-label={dayMode ? "切换到夜间观测" : "切换到白天观测"} title={dayMode ? "切换到夜间观测" : "切换到白天观测"}>{dayMode ? <Moon size={17} /> : <Sun size={17} />}</button></header>
-      <section className="scene-hint"><Crosshair size={15} /><span>{isDragging ? "球面旋转中 · 探索天球" : "拖动以环视 3D 天球"}</span><kbd>ORBIT</kbd><button className={`intensity-toggle ${visualIntensity === "strong" ? "active" : ""}`} onClick={toggleVisualIntensity} aria-pressed={visualIntensity === "strong"}>{visualIntensity === "strong" ? "全部高亮" : "柔和显示"}</button></section>
+      <header className="topbar"><div className="brand"><button className="brand-camera-button" onClick={captureObservatory} aria-label="拍摄天文台截图" title="拍摄天文台截图"><Camera size={18} /></button><div><div className="eyebrow">NIGHT OBSERVATORY · 3D SKY</div><h1>三体</h1></div></div><div className="status"><span className="status-dot" /> HYG v4.1 · {displayStarCount.toLocaleString()} STARS <b>·</b> {displayConstellationCount} CONSTELLATIONS</div><button className="icon-button" onClick={toggleDayNight} aria-label={dayMode ? "切换到夜间观测" : "切换到白天观测"} title={dayMode ? "切换到夜间观测" : "切换到白天观测"}>{dayMode ? <Moon size={17} /> : <Sun size={17} />}</button></header>
+      <section className="scene-hint"><Crosshair size={15} /><span>{isDragging ? "球面旋转中 · 探索天球" : "拖动以环视 3D 天球"}</span><kbd>ORBIT</kbd><button className={`intensity-toggle ${visualIntensity === "strong" ? "active" : ""}`} onClick={toggleVisualIntensity} aria-pressed={visualIntensity === "strong"}>{visualIntensity === "strong" ? "全部高亮" : "柔和显示"}</button><button className="intensity-toggle constellation-load-toggle" onClick={() => void toggleAllConstellations()} aria-label={fullDataLoaded ? "切换全部星座" : "加载完整星空数据"}>{fullDataLoaded ? (allConstellationsSelected ? "隐藏全部星座" : "全部星座") : "加载全部星座"}</button></section>
       {scientistTargets.length > 0 && <div className="scientist-zone" aria-label="科学家遗留现场">{scientistTargets.filter((scientist) => !scientistsFound.has(scientist.id)).map((scientist) => <button key={scientist.id} type="button" className="scientist-target" style={{ left: scientist.left, top: scientist.top, ["--scale" as string]: scientist.scale, ["--lean" as string]: `${scientist.lean}deg`, ["--body-width" as string]: `${scientist.bodyWidth}px`, ["--body-height" as string]: `${scientist.bodyHeight}px`, ["--arm" as string]: `${scientist.arm}deg`, ["--leg" as string]: `${scientist.leg}deg` }} onClick={() => discoverScientist(scientist.id)} aria-label="发现科学家"><span className="scientist-head" /><span className="scientist-body" /><span className="scientist-arm" /><span className="scientist-leg scientist-leg-one" /><span className="scientist-leg scientist-leg-two" /></button>)}</div>}
       {scientistNotice && <div className="scientist-notice" role="status">{scientistNotice}</div>}
       {celebration && <div className="mission-celebration" role="status"><span className="celebration-kicker">MISSION COMPLETE</span><strong>恭喜，倒计时任务完成</strong></div>}
