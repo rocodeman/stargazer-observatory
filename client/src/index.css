@@ -480,3 +480,118 @@ button:focus-visible { outline:1px solid var(--brass); outline-offset:3px; }
   .solar-communication-readout { top: 82px; width: calc(100vw - 28px); padding: 12px 14px 14px; }
   .solar-communication-readout p { font-size: 14px; line-height: 1.65; }
 }
+
+/* Midnight Observatory additions: Science Frontier is a restrained lower-right field investigation zone with readable, non-graphic silhouettes. */
+.scientist-zone {
+  position: fixed;
+  z-index: 18;
+  right: 6.5%;
+  bottom: 8.5%;
+  width: min(340px, 30vw);
+  height: 116px;
+  border: 1px solid rgba(91, 183, 177, .24);
+  background: linear-gradient(180deg, rgba(9, 28, 36, .12), rgba(4, 14, 22, .42));
+  box-shadow: inset 0 0 28px rgba(91, 183, 177, .04);
+  pointer-events: none;
+}
+
+.scientist-zone-label {
+  position: absolute;
+  top: -20px;
+  left: 0;
+  color: rgba(143, 209, 197, .72);
+  font: 600 9px/1 "IBM Plex Mono", monospace;
+  letter-spacing: .16em;
+}
+
+.scientist-target {
+  position: absolute;
+  width: 70px;
+  height: 76px;
+  transform: translate(-50%, -50%) rotate(-8deg);
+  border: 0;
+  background: transparent;
+  cursor: crosshair;
+  pointer-events: auto;
+  opacity: .82;
+  transition: opacity .18s ease, filter .18s ease, transform .18s ease;
+}
+
+.scientist-target:hover,
+.scientist-target:focus-visible {
+  opacity: 1;
+  filter: drop-shadow(0 0 10px rgba(231, 185, 106, .64));
+  transform: translate(-50%, -50%) rotate(-8deg) scale(1.08);
+  outline: none;
+}
+
+.scientist-target.found {
+  opacity: .38;
+  filter: grayscale(.65) drop-shadow(0 0 7px rgba(143, 209, 197, .42));
+}
+
+.scientist-head,
+.scientist-body {
+  position: absolute;
+  left: 50%;
+  display: block;
+  background: #18252b;
+  box-shadow: 0 0 0 1px rgba(135, 179, 177, .35), 0 4px 12px rgba(0, 0, 0, .45);
+}
+
+.scientist-head {
+  top: 5px;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  transform: translateX(-50%);
+}
+
+.scientist-body {
+  top: 21px;
+  width: 39px;
+  height: 43px;
+  border-radius: 48% 48% 24% 24%;
+  transform: translateX(-50%) rotate(16deg);
+}
+
+.scientist-tag {
+  position: absolute;
+  right: -8px;
+  bottom: 0;
+  color: rgba(229, 241, 235, .72);
+  font: 600 8px/1 "IBM Plex Mono", monospace;
+  letter-spacing: .08em;
+}
+
+.scientist-target.found .scientist-tag { color: #e7b96a; }
+
+.scientist-notice {
+  position: fixed;
+  z-index: 38;
+  right: 6.5%;
+  bottom: calc(8.5% + 138px);
+  padding: 11px 16px;
+  border-left: 2px solid #e7b96a;
+  background: rgba(4, 16, 25, .88);
+  color: #f3d58d;
+  font: 600 13px/1.3 "Noto Sans SC", sans-serif;
+  letter-spacing: .06em;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .28);
+  animation: scientist-notice-in 240ms ease-out both;
+}
+
+.science-celebration { border-color: rgba(143, 209, 197, .74); }
+
+@keyframes scientist-notice-in {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 760px) {
+  .scientist-zone { right: 5%; bottom: 11%; width: 230px; height: 94px; }
+  .scientist-target { transform: translate(-50%, -50%) scale(.78) rotate(-8deg); }
+  .scientist-target:hover,
+  .scientist-target:focus-visible { transform: translate(-50%, -50%) scale(.86) rotate(-8deg); }
+  .scientist-notice { right: 5%; bottom: calc(11% + 112px); font-size: 11px; }
+}
