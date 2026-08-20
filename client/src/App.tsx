@@ -7,6 +7,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Travel from "./pages/Travel";
 import SolarSystem from "./pages/SolarSystem";
+import SolarTriad from "./pages/SolarTriad";
 
 
 function Router() {
@@ -15,6 +16,7 @@ function Router() {
       <Route path={"/"} component={Home} />
       <Route path={"/travel/:planetId"} component={Travel} />
       <Route path={"/solar-system"} component={SolarSystem} />
+      <Route path={"/solar-triad"} component={SolarTriad} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

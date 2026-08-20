@@ -600,3 +600,8 @@ button:focus-visible { outline:1px solid var(--brass); outline-offset:3px; }
   .scientist-target:focus-visible { transform: translate(-50%, -50%) scale(calc(var(--scale, 1) * .8)) rotate(var(--lean, -8deg)); }
   .scientist-notice { right: 5%; bottom: 14%; font-size: 11px; }
 }
+
+
+/* 三太阳异常运行页面：异常信号横幅与任务返回按钮保持午夜仪表风格。 */
+.solar-triad-banner{position:absolute;z-index:6;top:98px;left:50%;transform:translateX(-50%);padding:8px 16px;color:var(--teal);background:rgba(5,17,25,.7);border:1px solid rgba(145,190,192,.22);font:500 9px 'IBM Plex Mono';letter-spacing:.1em;white-space:nowrap;pointer-events:none}.solar-triad-page .solar-system-console{padding-bottom:15px}.solar-return-mission{width:100%;margin-top:14px;padding:10px 12px;border:1px solid rgba(231,185,106,.68);background:rgba(231,185,106,.12);color:var(--brass);font:500 10px 'Noto Sans SC';letter-spacing:.08em;cursor:pointer;transition:.16s var(--ease-out)}.solar-return-mission:hover{background:rgba(231,185,106,.22);border-color:#f3d58d;color:#fff1bd;transform:translateY(-1px)}.solar-triad-celebration{border-color:rgba(243,213,141,.86)}
+@media(max-width:800px){.solar-triad-banner{top:78px;max-width:calc(100vw - 32px);overflow:hidden;text-overflow:ellipsis}.solar-return-mission{margin-top:10px}}

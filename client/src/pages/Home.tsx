@@ -70,6 +70,9 @@ function localSiderealHours(date: Date, longitude: number) {
 
 const SOLAR_OBJECTS = [
   { id: "sun", name: "太阳", latin: "SUN", color: "#ffd875", size: 5.5, baseRa: 0, baseDec: 0 },
+  { id: "virtual-sun-a", name: "曜灵", latin: "YAO-LING", color: "#ffd875", size: 5.5, baseRa: 10.8, baseDec: -8 },
+  { id: "virtual-sun-b", name: "烬环", latin: "JIN-HUAN", color: "#ffd875", size: 5.5, baseRa: 15.2, baseDec: 12 },
+  { id: "virtual-sun-c", name: "星烛", latin: "XING-ZHU", color: "#ffd875", size: 5.5, baseRa: 20.4, baseDec: 4 },
   { id: "moon", name: "月球", latin: "MOON", color: "#d7e8e4", size: 4.2, baseRa: 3.2, baseDec: 8 },
   { id: "mercury", name: "水星", latin: "MERCURY", color: "#d1aa83", size: 2.8, baseRa: 4.7, baseDec: 18 },
   { id: "venus", name: "金星", latin: "VENUS", color: "#ffe3a0", size: 3.8, baseRa: 5.1, baseDec: 21 },
@@ -89,6 +92,7 @@ function getSolarObjects(date: Date) {
 }
 
 const PLANET_IDS = new Set(["sun", "mercury", "venus", "mars", "jupiter", "saturn"]);
+const VIRTUAL_SUN_IDS = new Set(["virtual-sun-a", "virtual-sun-b", "virtual-sun-c"]);
 const BODY_DETAILS: Record<string, { type: string; distance: string; magnitude: string; description: string }> = {
   sun: { type: "恒星 · G2V", distance: "1 AU", magnitude: "−26.74", description: "太阳系中心恒星，提供地球上绝大多数可见光与热量。观测模拟中以当前日期的近似黄经位置显示。" },
   moon: { type: "地球卫星", distance: "384,400 km", magnitude: "−12.7", description: "地球唯一的天然卫星。月球位置和亮度会随着观测时间变化，夜空中的大气散射也会受其影响。" },
@@ -97,6 +101,9 @@ const BODY_DETAILS: Record<string, { type: string; distance: string; magnitude: 
   mars: { type: "行星 · 类地", distance: "1.52 AU", magnitude: "−2.9", description: "表面富含氧化铁，因此呈现橙红色；它的视亮度会随地球与火星的相对位置显著变化。" },
   jupiter: { type: "行星 · 气态巨行星", distance: "5.20 AU", magnitude: "−2.9", description: "太阳系最大的行星，明亮且容易辨认；在高倍率望远镜中可以进一步观察其卫星系统。" },
   saturn: { type: "行星 · 气态巨行星", distance: "9.58 AU", magnitude: "0.5", description: "以壮观的环系闻名。页面中的标记用于定位，未模拟望远镜高倍率下的环系细节。" },
+  "virtual-sun-a": { type: "异常恒星 · 观测幻象", distance: "未知", magnitude: "−25.8", description: "一个与太阳光谱外观相似的虚拟天体，轨迹无法归入现有星表。" },
+  "virtual-sun-b": { type: "异常恒星 · 观测幻象", distance: "未知", magnitude: "−26.1", description: "一个与太阳光谱外观相似的虚拟天体，周围存在不规则轨迹扰动。" },
+  "virtual-sun-c": { type: "异常恒星 · 观测幻象", distance: "未知", magnitude: "−25.4", description: "一个与太阳光谱外观相似的虚拟天体，信号呈现周期外闪烁。" },
 };
 function formatLocalInput(date: Date) {
   const pad = (value: number) => String(value).padStart(2, "0");
@@ -134,6 +141,7 @@ export default function Home() {
   const [celebration, setCelebration] = useState(false);
   const [scientistNotice, setScientistNotice] = useState("");
   const [scientistCelebration, setScientistCelebration] = useState(false);
+  const [triadCelebration, setTriadCelebration] = useState(false);
   const [scientistTargets] = useState(() => {
     const shuffledSlots = [...SCIENTIST_SLOTS].sort(() => Math.random() - .5);
     return SCIENTIST_PROFILES.map((profile, index) => ({ ...profile, ...shuffledSlots[index] }));
@@ -151,12 +159,19 @@ export default function Home() {
   const [cameraTarget, setCameraTarget] = useState<{ yaw: number; pitch: number } | null>(null);
   const [countdownComplete, setCountdownComplete] = useState(() => typeof window !== "undefined" && window.localStorage.getItem("stargazer.task.countdown") === "complete");
   const [broadcastComplete, setBroadcastComplete] = useState(() => typeof window !== "undefined" && window.localStorage.getItem("stargazer.task.cosmicBroadcast") === "complete");
+  const [triadComplete, setTriadComplete] = useState(() => typeof window !== "undefined" && window.localStorage.getItem("stargazer.task.threeSuns") === "complete");
   const [highlightModeCount, setHighlightModeCount] = useState(() => Math.min(3, Number(window.localStorage.getItem("stargazer.task.shineForYou.modeCount") || 0)));
   const shineComplete = highlightModeCount >= 3;
   const scienceBoundaryComplete = scientistsFound.size === scientistTargets.length;
   const scientistNoticeTimer = useRef<number | null>(null);
   useEffect(() => {
     setVisualIntensity(DEFAULT_VISUAL_INTENSITY);
+    if (window.sessionStorage.getItem("stargazer.triad.returned") === "1") {
+      window.sessionStorage.removeItem("stargazer.triad.returned");
+      setTriadCelebration(true);
+      setMeteorEnabled(true);
+      window.setTimeout(() => { setMeteorEnabled(false); setTriadCelebration(false); }, 5000);
+    }
   }, []);
   const toggleDayNight = () => setDayMode((mode) => !mode);
   const toggleVisualIntensity = () => {
@@ -232,12 +247,15 @@ export default function Home() {
     window.localStorage.removeItem("stargazer.task.countdown");
     window.localStorage.removeItem("stargazer.broadcast.sunDayAccess");
     window.localStorage.removeItem("stargazer.task.cosmicBroadcast");
+    window.localStorage.removeItem("stargazer.task.threeSuns");
     window.localStorage.removeItem("stargazer.task.shineForYou");
     window.localStorage.removeItem("stargazer.task.shineForYou.constellations");
     window.localStorage.removeItem("stargazer.task.shineForYou.modeCount");
     window.localStorage.removeItem("stargazer.task.scienceBoundary");
     setCountdownComplete(false);
     setBroadcastComplete(false);
+    setTriadComplete(false);
+    setTriadCelebration(false);
     setHighlightModeCount(0);
     setScientistsFound(new Set());
     setScientistNotice("");
@@ -464,6 +482,10 @@ export default function Home() {
       if (point.visible && distance < nearestDistance) { nearest = target; nearestDistance = distance; }
     }
     if (nearest) {
+      if (VIRTUAL_SUN_IDS.has(nearest.id)) {
+        navigate(`/solar-triad?focus=${nearest.id}`);
+        return;
+      }
       if (nearest.id === "sun" && !dayMode) return;
       setSelectedBody(nearest);
       return;
@@ -502,13 +524,14 @@ export default function Home() {
       <div className="meteor-layer" aria-hidden="true">{meteors.map((meteor) => <span key={meteor.id} className="meteor" style={{ left: `${meteor.left}%`, top: `${meteor.top}%`, ["--angle" as string]: `${meteor.angle}deg`, animationDuration: `${meteor.duration}ms` }} />)}</div>
       {label && <div className="constellation-label" style={{ left: label.x, top: label.y }}><span>{label.latin}</span><strong>{label.name}</strong></div>}
       {selectedBody && <aside className="body-detail"><button className="detail-close" onClick={() => setSelectedBody(null)} aria-label="关闭详情">×</button><div className="readout-label">CELESTIAL OBJECT · {selectedBody.latin}</div><h2>{selectedBody.name}</h2><div className="detail-type">{selectedBody.detail.type}</div><div className="detail-stats"><span><small>DISTANCE</small>{selectedBody.detail.distance}</span><span><small>MAGNITUDE</small>{selectedBody.detail.magnitude}</span></div><p>{selectedBody.detail.description}</p><button className="detail-focus travel-focus" onClick={() => { if (PLANET_IDS.has(selectedBody.id)) navigate(`/travel/${selectedBody.id}`); else { const target = [...solarObjects, ...MESSIER_OBJECTS].find((item) => item.id === selectedBody.id); if (target) rotateToVector(target.vector); } }}>{PLANET_IDS.has(selectedBody.id) ? <>开始星际旅行 <Telescope size={14} /></> : <>转到目标位置 <LocateFixed size={14} /></>}</button>{PLANET_IDS.has(selectedBody.id) && <button className="detail-focus solar-orbit-focus" onClick={() => { if (selectedBody.id === "sun" && dayMode) window.localStorage.setItem("stargazer.broadcast.sunDayAccess", "authorized"); navigate(`/solar-system?focus=${selectedBody.id}`); }}><RotateCcw size={14} />查看太阳系运转</button>}</aside>}
-      <aside className="character-panel"><div className="character-profile"><div className="character-avatar"><CircleUserRound size={25} /></div><div><span>OBSERVATORY PILOT</span><strong>观测者</strong></div></div><div className="character-divider" /><div className="mission-panel-kicker"><Radio size={13} /> 任务 · 4</div><div className={`mission-item ${broadcastComplete ? "complete" : "incomplete"}`}><span className="mission-status">{broadcastComplete ? <CheckCircle2 size={16} /> : <span className="mission-ring" />}</span><div><strong>宇宙广播</strong><small>{broadcastComplete ? "已完成" : "未完成"}</small></div><em>{broadcastComplete ? "COMPLETE" : "ACTIVE"}</em></div><div className={`mission-item ${countdownComplete ? "complete" : "incomplete"}`}><span className="mission-status">{countdownComplete ? <CheckCircle2 size={16} /> : <span className="mission-ring" />}</span><div><strong>倒计时</strong><small>{countdownComplete ? "已完成" : "未完成"}</small></div><em>{countdownComplete ? "COMPLETE" : "ACTIVE"}</em></div><div className={`mission-item ${shineComplete ? "complete" : "incomplete"}`}><span className="mission-status">{shineComplete ? <CheckCircle2 size={16} /> : <span className="mission-ring" />}</span><div><strong>为你闪耀</strong><small>{shineComplete ? "已完成" : "未完成"}</small></div><em>{shineComplete ? "COMPLETE" : "ACTIVE"}</em></div><div className={`mission-item ${scienceBoundaryComplete ? "complete" : "incomplete"}`}><span className="mission-status">{scienceBoundaryComplete ? <CheckCircle2 size={16} /> : <span className="mission-ring" />}</span><div><strong>科学家的葬礼</strong><small>{scienceBoundaryComplete ? "已完成" : `还需发现 ${scientistTargets.length - scientistsFound.size} 位完成`}</small></div><em>{scienceBoundaryComplete ? "COMPLETE" : "ACTIVE"}</em></div><button type="button" className="mission-replay" onClick={replayMissions}><RotateCcw size={12} /> 重玩</button></aside>
+      <aside className="character-panel"><div className="character-profile"><div className="character-avatar"><CircleUserRound size={25} /></div><div><span>OBSERVATORY PILOT</span><strong>观测者</strong></div></div><div className="character-divider" /><div className="mission-panel-kicker"><Radio size={13} /> 任务 · 5</div><div className={`mission-item ${broadcastComplete ? "complete" : "incomplete"}`}><span className="mission-status">{broadcastComplete ? <CheckCircle2 size={16} /> : <span className="mission-ring" />}</span><div><strong>宇宙广播</strong><small>{broadcastComplete ? "已完成" : "未完成"}</small></div><em>{broadcastComplete ? "COMPLETE" : "ACTIVE"}</em></div><div className={`mission-item ${scienceBoundaryComplete ? "complete" : "incomplete"}`}><span className="mission-status">{scienceBoundaryComplete ? <CheckCircle2 size={16} /> : <span className="mission-ring" />}</span><div><strong>科学家的葬礼</strong><small>{scienceBoundaryComplete ? "已完成" : `还需发现 ${scientistTargets.length - scientistsFound.size} 位完成`}</small></div><em>{scienceBoundaryComplete ? "COMPLETE" : "ACTIVE"}</em></div><div className={`mission-item ${countdownComplete ? "complete" : "incomplete"}`}><span className="mission-status">{countdownComplete ? <CheckCircle2 size={16} /> : <span className="mission-ring" />}</span><div><strong>倒计时</strong><small>{countdownComplete ? "已完成" : "未完成"}</small></div><em>{countdownComplete ? "COMPLETE" : "ACTIVE"}</em></div><div className={`mission-item ${shineComplete ? "complete" : "incomplete"}`}><span className="mission-status">{shineComplete ? <CheckCircle2 size={16} /> : <span className="mission-ring" />}</span><div><strong>为你闪耀</strong><small>{shineComplete ? "已完成" : "未完成"}</small></div><em>{shineComplete ? "COMPLETE" : "ACTIVE"}</em></div><div className={`mission-item ${triadComplete ? "complete" : "incomplete"}`}><span className="mission-status">{triadComplete ? <CheckCircle2 size={16} /> : <span className="mission-ring" />}</span><div><strong>三个太阳</strong><small>{triadComplete ? "已完成" : "未完成"}</small></div><em>{triadComplete ? "COMPLETE" : "ACTIVE"}</em></div><button type="button" className="mission-replay" onClick={replayMissions}><RotateCcw size={12} /> 重玩</button></aside>
       <header className="topbar"><div className="brand"><button className="brand-camera-button" onClick={captureObservatory} aria-label="拍摄天文台截图" title="拍摄天文台截图"><Camera size={18} /></button><div><div className="eyebrow">NIGHT OBSERVATORY · 3D SKY</div><h1>午夜天文台</h1></div></div><div className="status"><span className="status-dot" /> HYG v4.1 · {STAR_COUNT.toLocaleString()} STARS <b>·</b> {CONSTELLATION_COUNT} CONSTELLATIONS</div><button className="icon-button" onClick={toggleDayNight} aria-label={dayMode ? "切换到夜间观测" : "切换到白天观测"} title={dayMode ? "切换到夜间观测" : "切换到白天观测"}>{dayMode ? <Moon size={17} /> : <Sun size={17} />}</button></header>
       <section className="scene-hint"><Crosshair size={15} /><span>{isDragging ? "球面旋转中 · 探索天球" : "拖动以环视 3D 天球"}</span><kbd>ORBIT</kbd><button className={`intensity-toggle ${visualIntensity === "strong" ? "active" : ""}`} onClick={toggleVisualIntensity} aria-pressed={visualIntensity === "strong"}>{visualIntensity === "strong" ? "全部高亮" : "柔和显示"}</button></section>
       {scientistTargets.length > 0 && <div className="scientist-zone" aria-label="科学家遗留现场">{scientistTargets.filter((scientist) => !scientistsFound.has(scientist.id)).map((scientist) => <button key={scientist.id} type="button" className="scientist-target" style={{ left: scientist.left, top: scientist.top, ["--scale" as string]: scientist.scale, ["--lean" as string]: `${scientist.lean}deg`, ["--body-width" as string]: `${scientist.bodyWidth}px`, ["--body-height" as string]: `${scientist.bodyHeight}px`, ["--arm" as string]: `${scientist.arm}deg`, ["--leg" as string]: `${scientist.leg}deg` }} onClick={() => discoverScientist(scientist.id)} aria-label="发现科学家"><span className="scientist-head" /><span className="scientist-body" /><span className="scientist-arm" /><span className="scientist-leg scientist-leg-one" /><span className="scientist-leg scientist-leg-two" /></button>)}</div>}
       {scientistNotice && <div className="scientist-notice" role="status">{scientistNotice}</div>}
       {celebration && <div className="mission-celebration" role="status"><span className="celebration-kicker">MISSION COMPLETE</span><strong>恭喜，倒计时任务完成</strong></div>}
       {scientistCelebration && <div className="mission-celebration science-celebration" role="status"><span className="celebration-kicker">MISSION COMPLETE</span><strong>恭喜，科学家的葬礼任务完成</strong></div>}
+      {triadCelebration && <div className="mission-celebration solar-triad-celebration" role="status"><span className="celebration-kicker">MISSION COMPLETE</span><strong>恭喜，三个太阳任务完成</strong></div>}
       <footer className="bottom-bar"><div className="location"><Compass size={15} /><span>纬 {latitude.toFixed(2)}° · 经 {longitude.toFixed(2)}° · J2000</span></div><div className="azimuth-dial"><span className="dial-tick t1" /><span className="dial-tick t2" /><span className="dial-tick t3" /><span className="dial-needle" /><span className="dial-north">N</span><span className="dial-east">E</span><span className="dial-south">S</span><span className="dial-west">W</span></div><div className="footer-meta"><span><Moon size={14} /> 朔月 · 04:18</span><span className="divider" /><span>HYG / BSC</span></div></footer>
     </main>
   );
