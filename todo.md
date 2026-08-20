@@ -325,3 +325,11 @@
 - [ ] 创建公开仓库 `stargazer-observatory`。
 - [ ] 提交当前代码、README、LICENSE 和首页截图并推送。
 - [ ] 核验远程仓库可访问及关键文件存在。
+
+
+# README 章节调整
+
+- [ ] 删除 Pascal 徽章。
+- [ ] 删除“项目状态”章节。
+- [ ] 将“致谢 Manus”移动到“许可证”章节之前。
+- [ ] 检查 Markdown 结构并同步 GitHub。
