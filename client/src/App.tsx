@@ -1,4 +1,5 @@
-import { lazy, Suspense } from "react";
+/* Design philosophy: 三体 / Scientific Instrument Aesthetic. Loading is presented as a measured observatory boot sequence, not a generic spinner. */
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Route, Switch } from "wouter";
@@ -12,10 +13,29 @@ const SolarTriad = lazy(() => import("./pages/SolarTriad"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 function RouteFallback() {
+  const stages = [
+    { at: 8, text: "建立三体观测链路" },
+    { at: 31, text: "校准天球坐标" },
+    { at: 56, text: "同步星点目录" },
+    { at: 79, text: "准备观测舱" },
+    { at: 96, text: "等待观测窗口" },
+  ];
+  const [progress, setProgress] = useState(8);
+  useEffect(() => {
+    const timer = window.setInterval(() => setProgress((value) => Math.min(96, value + (value < 56 ? 4 : 2))), 180);
+    return () => window.clearInterval(timer);
+  }, []);
+  const stage = [...stages].reverse().find((item) => progress >= item.at) ?? stages[0];
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[#071018] text-[#e7b96a] font-mono text-sm">
-      <span>LOADING OBSERVATORY...</span>
-    </div>
+    <main className="three-body-loading" role="status" aria-live="polite" aria-label={`三体观测启动进度 ${progress}%`}>
+      <div className="three-body-loading__instrument">
+        <div className="three-body-loading__eyebrow">THREE-BODY OBSERVATORY · BOOT SEQUENCE</div>
+        <div className="three-body-loading__title">三体观测链路启动中</div>
+        <div className="three-body-loading__stage">{stage.text}</div>
+        <div className="three-body-loading__track" aria-hidden="true"><span style={{ width: `${progress}%` }} /></div>
+        <div className="three-body-loading__meta"><span>观测窗口</span><strong>{progress}%</strong><span>三体坐标系</span></div>
+      </div>
+    </main>
   );
 }
 
