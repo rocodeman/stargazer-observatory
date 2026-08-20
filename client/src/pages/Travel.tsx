@@ -1,4 +1,4 @@
-/* Design philosophy: 午夜天文台 / Scientific Instrument Aesthetic. This is a full-screen cockpit view with a tactile arrival orbit mode. */
+/* Design philosophy: 三体 / Scientific Instrument Aesthetic. This is a full-screen cockpit view with a tactile arrival orbit mode. */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Gauge, Pause, Play, RotateCcw, Rocket, Telescope } from "lucide-react";
 import { useLocation, useParams } from "wouter";

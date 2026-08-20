@@ -1,4 +1,4 @@
-/* Design philosophy: 午夜天文台 / Scientific Instrument Aesthetic. This page is a calm digital orrery: orbit geometry is precise, controls are tactile, and the 3D system remains the visual focus. */
+/* Design philosophy: 三体 / Scientific Instrument Aesthetic. This page is a calm digital orrery: orbit geometry is precise, controls are tactile, and the 3D system remains the visual focus. */
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Gauge, Pause, Play, RotateCcw } from "lucide-react";
 import { useLocation } from "wouter";

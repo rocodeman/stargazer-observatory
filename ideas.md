@@ -1,7 +1,7 @@
 # 观星模拟器设计脑暴
 
 ## 方向一
-- **Theme Name**：午夜天文台
+- **Theme Name**：三体
 - **Very Brief Intro**：以深墨蓝、低饱和金色和精密仪器标记营造专业天文台的夜间观测感。画面像一台真实望远镜的取景器，克制、清晰、带有测量意味。
 - **Probability**：0.074
 
@@ -15,7 +15,7 @@
 - **Very Brief Intro**：以冷灰黑背景、荧光青和仪表刻度呈现高科技观测控制室，强调实时反馈、轨道感和游戏式操作反馈。
 - **Probability**：0.089
 
-## 选定方向：午夜天文台
+## 选定方向：三体
 
 - **Design Movement**：科学仪器美学（Scientific Instrument Aesthetic）与电影化夜景构图的结合。
 - **Core Principles**：

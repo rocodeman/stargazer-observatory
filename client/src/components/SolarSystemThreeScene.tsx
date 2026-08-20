@@ -1,4 +1,4 @@
-/* Design philosophy: 午夜天文台 / Scientific Instrument Aesthetic. A quiet instrument-grade 3D orrery uses brass orbital geometry, teal telemetry, and restrained midnight space. */
+/* Design philosophy: 三体 / Scientific Instrument Aesthetic. A quiet instrument-grade 3D orrery uses brass orbital geometry, teal telemetry, and restrained midnight space. */
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 

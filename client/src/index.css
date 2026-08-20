@@ -2,7 +2,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* Design philosophy: 午夜天文台 / low-luminance scientific instrument UI. The sky remains dominant; warm brass marks targets, mist teal reports instrument state. */
+/* Design philosophy: 三体 / low-luminance scientific instrument UI. The sky remains dominant; warm brass marks targets, mist teal reports instrument state. */
 :root { --ink:#071018; --ink-soft:#0b1823; --panel:rgba(6,16,24,.72); --line:rgba(171,201,210,.20); --line-bright:rgba(212,228,228,.36); --text:#e8ece3; --muted:#96a8ad; --brass:#e7b96a; --teal:#91bec0; --ease-out:cubic-bezier(.23,1,.32,1); }
 * { box-sizing:border-box; }
 html,body,#root { width:100%; height:100%; margin:0; overflow:hidden; }
@@ -312,7 +312,7 @@ button:focus-visible { outline:1px solid var(--brass); outline-offset:3px; }
 .mission-replay{width:100%;display:flex;align-items:center;justify-content:center;gap:5px;margin-top:12px;padding:7px 0;border:1px solid rgba(145,190,192,.24);background:rgba(145,190,192,.04);color:var(--muted);font:400 9px 'Noto Sans SC';cursor:pointer;transition:.16s var(--ease-out)}.mission-replay:hover{border-color:rgba(231,185,106,.62);background:rgba(231,185,106,.08);color:var(--brass)}
 @media(max-width:800px){.mission-replay{margin-top:9px;padding:6px 0;font-size:8px}}
 
-/* Midnight Observatory additions: mission capture UI uses restrained brass instrumentation, while the celebration overlay stays central and readable over the star field. */
+/* Three-Body additions: mission capture UI uses restrained brass instrumentation, while the celebration overlay stays central and readable over the star field. */
 .icon-button[aria-label="拍摄天文台截图"] {
   color: #f3d58d;
   border-color: rgba(231, 185, 106, .46);
@@ -385,7 +385,7 @@ button:focus-visible { outline:1px solid var(--brass); outline-offset:3px; }
   .mission-celebration strong { font-size: 19px; }
 }
 
-/* Midnight Observatory additions: the brand-side camera is the capture control; the top-right sun/moon control changes the entire sky instrument from night to day. */
+/* Three-Body additions: the brand-side camera is the capture control; the top-right sun/moon control changes the entire sky instrument from night to day. */
 .brand-camera-button {
   display: grid;
   width: 38px;
@@ -425,7 +425,7 @@ button:focus-visible { outline:1px solid var(--brass); outline-offset:3px; }
   .brand-camera-button { width: 34px; height: 34px; }
 }
 
-/* Midnight Observatory additions: readable on-screen transcription keeps deep-space communication accessible without audio. */
+/* Three-Body additions: readable on-screen transcription keeps deep-space communication accessible without audio. */
 .solar-communication-readout {
   position: fixed;
   z-index: 24;
@@ -481,7 +481,7 @@ button:focus-visible { outline:1px solid var(--brass); outline-offset:3px; }
   .solar-communication-readout p { font-size: 14px; line-height: 1.65; }
 }
 
-/* Midnight Observatory additions: Science Frontier is a restrained lower-right field investigation zone with readable, non-graphic silhouettes. */
+/* Three-Body additions: Science Frontier is a restrained lower-right field investigation zone with readable, non-graphic silhouettes. */
 .scientist-zone {
   position: fixed;
   z-index: 18;

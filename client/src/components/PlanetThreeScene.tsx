@@ -1,4 +1,4 @@
-/* Design philosophy: 午夜天文台 / Scientific Instrument Aesthetic. Real 3D planet materials sit inside a quiet, instrument-like viewport. */
+/* Design philosophy: 三体 / Scientific Instrument Aesthetic. Real 3D planet materials sit inside a quiet, instrument-like viewport. */
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 
