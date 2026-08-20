@@ -810,3 +810,7 @@ button:focus-visible { outline:1px solid var(--brass); outline-offset:3px; }
   .dark-forest-events { margin-top: 14px; padding: 9px 10px; font-size: .56rem; letter-spacing: .02em; }
   .dark-forest-ending { margin-bottom: 9px; font-size: .9rem; }
 }
+
+
+/* 终局致谢：将协作者链接作为观测记录末行，保持低调但清晰可访问。 */
+.dark-forest-credit { display: block; margin-top: 7px; color: rgba(231, 185, 106, .62) !important; }
