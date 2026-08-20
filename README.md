@@ -8,6 +8,8 @@
 
 ![三体首页观测界面](docs/homepage.jpg)
 
+![太阳系运行界面](docs/solar-system.jpg)
+
 在线体验：[三体天文观测模拟器](https://stargazer-gbqurilt.manus.space)
 
 > 一款以“三体”叙事氛围为灵感的全屏天文观测模拟器。用户可以拖动 3D 天球探索星空、观测太阳系天体，并通过五项叙事任务体验三颗太阳、宇宙广播、隐藏目标搜索与昼夜观测。
