@@ -1,7 +1,8 @@
 /* Design philosophy: 午夜天文台 / Scientific Instrument Aesthetic. A true celestial sphere replaces the former flat viewport; controls remain edge-mounted and quiet. */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "wouter";
-import { CheckCircle2, CircleUserRound, Compass, Crosshair, Info, LocateFixed, Moon, Radio, RotateCcw, Telescope } from "lucide-react";
+import { Camera, CheckCircle2, CircleUserRound, Compass, Crosshair, LocateFixed, Moon, Radio, RotateCcw, Telescope } from "lucide-react";
+import html2canvas from "html2canvas";
 import { SKY_DATA } from "@/data/skyData";
 
 type Vec3 = { x: number; y: number; z: number };
@@ -119,12 +120,15 @@ export default function Home() {
   const [timeRate, setTimeRate] = useState(0);
   const [meteorEnabled, setMeteorEnabled] = useState(false);
   const [meteors, setMeteors] = useState<Array<{ id: number; left: number; top: number; angle: number; duration: number }>>([]);
+  const [celebration, setCelebration] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [search, setSearch] = useState("");
   const [label, setLabel] = useState<{ x: number; y: number; name: string; latin: string } | null>(null);
   const [focusTarget, setFocusTarget] = useState("orion");
   const meteorId = useRef(0);
+  const celebrationTimer = useRef<number | null>(null);
   const [cameraTarget, setCameraTarget] = useState<{ yaw: number; pitch: number } | null>(null);
+  const [countdownComplete, setCountdownComplete] = useState(() => typeof window !== "undefined" && window.localStorage.getItem("stargazer.task.countdown") === "complete");
   const [broadcastComplete, setBroadcastComplete] = useState(() => typeof window !== "undefined" && window.localStorage.getItem("stargazer.task.cosmicBroadcast") === "complete");
   const [highlightModeCount, setHighlightModeCount] = useState(() => Math.min(3, Number(window.localStorage.getItem("stargazer.task.shineForYou.modeCount") || 0)));
   const shineComplete = highlightModeCount >= 3;
@@ -150,11 +154,48 @@ export default function Home() {
     setFocusTarget(item.id);
     focusConstellation(item);
   };
+  const captureObservatory = async () => {
+    try {
+      const snapshot = await html2canvas(document.documentElement, { backgroundColor: null, useCORS: true, logging: false, scale: Math.min(2, window.devicePixelRatio || 1), windowWidth: document.documentElement.scrollWidth, windowHeight: document.documentElement.scrollHeight });
+      const stamp = new Date();
+      const pad = (value: number) => String(value).padStart(2, "0");
+      const timestamp = `${stamp.getFullYear()}-${pad(stamp.getMonth() + 1)}-${pad(stamp.getDate())} ${pad(stamp.getHours())}:${pad(stamp.getMinutes())}:${pad(stamp.getSeconds())}`;
+      const context = snapshot.getContext("2d");
+      if (!context) return;
+      const scale = snapshot.width / Math.max(1, document.documentElement.scrollWidth);
+      const padding = 22 * scale;
+      context.font = `600 ${15 * scale}px IBM Plex Mono, monospace`;
+      const textWidth = context.measureText(timestamp).width;
+      context.fillStyle = "rgba(3, 12, 18, .78)";
+      context.fillRect(snapshot.width - textWidth - padding * 2, snapshot.height - 42 * scale - padding, textWidth + padding * 2, 42 * scale);
+      context.fillStyle = "#f3d58d";
+      context.textAlign = "right";
+      context.textBaseline = "bottom";
+      context.fillText(timestamp, snapshot.width - padding, snapshot.height - padding);
+      const link = document.createElement("a");
+      link.download = `midnight-observatory-${timestamp.replace(/[: ]/g, "-")}.png`;
+      link.href = snapshot.toDataURL("image/png");
+      link.click();
+      window.localStorage.setItem("stargazer.task.countdown", "complete");
+      setCountdownComplete(true);
+      setCelebration(true);
+      setMeteorEnabled(true);
+      if (celebrationTimer.current) window.clearTimeout(celebrationTimer.current);
+      celebrationTimer.current = window.setTimeout(() => {
+        setMeteorEnabled(false);
+        setCelebration(false);
+      }, 10000);
+    } catch (error) {
+      console.error("无法生成天文台截图", error);
+    }
+  };
   const replayMissions = () => {
+    window.localStorage.removeItem("stargazer.task.countdown");
     window.localStorage.removeItem("stargazer.task.cosmicBroadcast");
     window.localStorage.removeItem("stargazer.task.shineForYou");
     window.localStorage.removeItem("stargazer.task.shineForYou.constellations");
     window.localStorage.removeItem("stargazer.task.shineForYou.modeCount");
+    setCountdownComplete(false);
     setBroadcastComplete(false);
     setHighlightModeCount(0);
     setVisualIntensity(DEFAULT_VISUAL_INTENSITY);
@@ -412,9 +453,10 @@ export default function Home() {
       <div className="meteor-layer" aria-hidden="true">{meteors.map((meteor) => <span key={meteor.id} className="meteor" style={{ left: `${meteor.left}%`, top: `${meteor.top}%`, ["--angle" as string]: `${meteor.angle}deg`, animationDuration: `${meteor.duration}ms` }} />)}</div>
       {label && <div className="constellation-label" style={{ left: label.x, top: label.y }}><span>{label.latin}</span><strong>{label.name}</strong></div>}
       {selectedBody && <aside className="body-detail"><button className="detail-close" onClick={() => setSelectedBody(null)} aria-label="关闭详情">×</button><div className="readout-label">CELESTIAL OBJECT · {selectedBody.latin}</div><h2>{selectedBody.name}</h2><div className="detail-type">{selectedBody.detail.type}</div><div className="detail-stats"><span><small>DISTANCE</small>{selectedBody.detail.distance}</span><span><small>MAGNITUDE</small>{selectedBody.detail.magnitude}</span></div><p>{selectedBody.detail.description}</p><button className="detail-focus travel-focus" onClick={() => { if (PLANET_IDS.has(selectedBody.id)) navigate(`/travel/${selectedBody.id}`); else { const target = [...solarObjects, ...MESSIER_OBJECTS].find((item) => item.id === selectedBody.id); if (target) rotateToVector(target.vector); } }}>{PLANET_IDS.has(selectedBody.id) ? <>开始星际旅行 <Telescope size={14} /></> : <>转到目标位置 <LocateFixed size={14} /></>}</button>{PLANET_IDS.has(selectedBody.id) && <button className="detail-focus solar-orbit-focus" onClick={() => navigate(`/solar-system?focus=${selectedBody.id}`)}><RotateCcw size={14} />查看太阳系运转</button>}</aside>}
-      <aside className="character-panel"><div className="character-profile"><div className="character-avatar"><CircleUserRound size={25} /></div><div><span>OBSERVATORY PILOT</span><strong>观测者</strong></div></div><div className="character-divider" /><div className="mission-panel-kicker"><Radio size={13} /> 任务 · 2</div><div className={`mission-item ${broadcastComplete ? "complete" : "incomplete"}`}><span className="mission-status">{broadcastComplete ? <CheckCircle2 size={16} /> : <span className="mission-ring" />}</span><div><strong>宇宙广播</strong><small>{broadcastComplete ? "已完成" : "未完成"}</small></div><em>{broadcastComplete ? "COMPLETE" : "ACTIVE"}</em></div><div className={`mission-item ${shineComplete ? "complete" : "incomplete"}`}><span className="mission-status">{shineComplete ? <CheckCircle2 size={16} /> : <span className="mission-ring" />}</span><div><strong>为你闪耀</strong><small>{shineComplete ? "已完成" : "未完成"}</small></div><em>{shineComplete ? "COMPLETE" : "ACTIVE"}</em></div><button type="button" className="mission-replay" onClick={replayMissions}><RotateCcw size={12} /> 重玩</button></aside>
-      <header className="topbar"><div className="brand"><div className="brand-mark"><span /><span /><span /></div><div><div className="eyebrow">NIGHT OBSERVATORY · 3D SKY</div><h1>午夜天文台</h1></div></div><div className="status"><span className="status-dot" /> HYG v4.1 · {STAR_COUNT.toLocaleString()} STARS <b>·</b> {CONSTELLATION_COUNT} CONSTELLATIONS</div><button className="icon-button" aria-label="观测信息"><Info size={17} /></button></header>
+      <aside className="character-panel"><div className="character-profile"><div className="character-avatar"><CircleUserRound size={25} /></div><div><span>OBSERVATORY PILOT</span><strong>观测者</strong></div></div><div className="character-divider" /><div className="mission-panel-kicker"><Radio size={13} /> 任务 · 3</div><div className={`mission-item ${countdownComplete ? "complete" : "incomplete"}`}><span className="mission-status">{countdownComplete ? <CheckCircle2 size={16} /> : <span className="mission-ring" />}</span><div><strong>倒计时</strong><small>{countdownComplete ? "已完成" : "未完成"}</small></div><em>{countdownComplete ? "COMPLETE" : "ACTIVE"}</em></div><div className={`mission-item ${broadcastComplete ? "complete" : "incomplete"}`}><span className="mission-status">{broadcastComplete ? <CheckCircle2 size={16} /> : <span className="mission-ring" />}</span><div><strong>宇宙广播</strong><small>{broadcastComplete ? "已完成" : "未完成"}</small></div><em>{broadcastComplete ? "COMPLETE" : "ACTIVE"}</em></div><div className={`mission-item ${shineComplete ? "complete" : "incomplete"}`}><span className="mission-status">{shineComplete ? <CheckCircle2 size={16} /> : <span className="mission-ring" />}</span><div><strong>为你闪耀</strong><small>{shineComplete ? "已完成" : "未完成"}</small></div><em>{shineComplete ? "COMPLETE" : "ACTIVE"}</em></div><button type="button" className="mission-replay" onClick={replayMissions}><RotateCcw size={12} /> 重玩</button></aside>
+      <header className="topbar"><div className="brand"><div className="brand-mark"><span /><span /><span /></div><div><div className="eyebrow">NIGHT OBSERVATORY · 3D SKY</div><h1>午夜天文台</h1></div></div><div className="status"><span className="status-dot" /> HYG v4.1 · {STAR_COUNT.toLocaleString()} STARS <b>·</b> {CONSTELLATION_COUNT} CONSTELLATIONS</div><button className="icon-button" onClick={captureObservatory} aria-label="拍摄天文台截图" title="拍摄天文台截图"><Camera size={17} /></button></header>
       <section className="scene-hint"><Crosshair size={15} /><span>{isDragging ? "球面旋转中 · 探索天球" : "拖动以环视 3D 天球"}</span><kbd>ORBIT</kbd><button className={`intensity-toggle ${visualIntensity === "strong" ? "active" : ""}`} onClick={toggleVisualIntensity} aria-pressed={visualIntensity === "strong"}>{visualIntensity === "strong" ? "全部高亮" : "柔和显示"}</button></section>
+      {celebration && <div className="mission-celebration" role="status"><span className="celebration-kicker">MISSION COMPLETE · 倒计时</span><strong>天文台记录已保存</strong><small>十秒流星雨观测窗口已开启</small></div>}
       <footer className="bottom-bar"><div className="location"><Compass size={15} /><span>纬 {latitude.toFixed(2)}° · 经 {longitude.toFixed(2)}° · J2000</span></div><div className="azimuth-dial"><span className="dial-tick t1" /><span className="dial-tick t2" /><span className="dial-tick t3" /><span className="dial-needle" /><span className="dial-north">N</span><span className="dial-east">E</span><span className="dial-south">S</span><span className="dial-west">W</span></div><div className="footer-meta"><span><Moon size={14} /> 朔月 · 04:18</span><span className="divider" /><span>HYG / BSC</span></div></footer>
     </main>
   );

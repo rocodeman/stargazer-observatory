@@ -311,3 +311,76 @@ button:focus-visible { outline:1px solid var(--brass); outline-offset:3px; }
 /* Mission replay control: a quiet reset action kept below the task list. */
 .mission-replay{width:100%;display:flex;align-items:center;justify-content:center;gap:5px;margin-top:12px;padding:7px 0;border:1px solid rgba(145,190,192,.24);background:rgba(145,190,192,.04);color:var(--muted);font:400 9px 'Noto Sans SC';cursor:pointer;transition:.16s var(--ease-out)}.mission-replay:hover{border-color:rgba(231,185,106,.62);background:rgba(231,185,106,.08);color:var(--brass)}
 @media(max-width:800px){.mission-replay{margin-top:9px;padding:6px 0;font-size:8px}}
+
+/* Midnight Observatory additions: mission capture UI uses restrained brass instrumentation, while the celebration overlay stays central and readable over the star field. */
+.icon-button[aria-label="拍摄天文台截图"] {
+  color: #f3d58d;
+  border-color: rgba(231, 185, 106, .46);
+  background: rgba(6, 18, 27, .72);
+}
+
+.icon-button[aria-label="拍摄天文台截图"]:hover {
+  color: #fff1bd;
+  border-color: rgba(243, 213, 141, .9);
+  box-shadow: 0 0 22px rgba(231, 185, 106, .22);
+}
+
+.mission-celebration {
+  position: fixed;
+  z-index: 35;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  min-width: min(360px, calc(100vw - 40px));
+  gap: 7px;
+  transform: translate(-50%, -50%);
+  padding: 22px 28px 24px;
+  border: 1px solid rgba(231, 185, 106, .72);
+  background: linear-gradient(145deg, rgba(8, 24, 34, .94), rgba(6, 15, 23, .9));
+  color: #f5ead0;
+  text-align: center;
+  box-shadow: 0 0 0 1px rgba(91, 183, 177, .12), 0 22px 70px rgba(0, 0, 0, .42), 0 0 38px rgba(231, 185, 106, .18);
+  animation: mission-celebration-in 420ms cubic-bezier(.23, 1, .32, 1) both;
+  pointer-events: none;
+}
+
+.mission-celebration::before,
+.mission-celebration::after {
+  content: "";
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  width: 3px;
+  background: #e7b96a;
+  opacity: .75;
+}
+
+.mission-celebration::before { left: 10px; }
+.mission-celebration::after { right: 10px; }
+
+.mission-celebration .celebration-kicker {
+  color: #8fd1c5;
+  font: 600 10px/1.2 "IBM Plex Mono", monospace;
+  letter-spacing: .18em;
+}
+
+.mission-celebration strong {
+  color: #fff1bd;
+  font: 600 24px/1.25 "Noto Sans SC", sans-serif;
+  letter-spacing: .08em;
+}
+
+.mission-celebration small {
+  color: rgba(226, 237, 231, .76);
+  font: 500 12px/1.5 "Noto Sans SC", sans-serif;
+}
+
+@keyframes mission-celebration-in {
+  from { opacity: 0; transform: translate(-50%, -46%) scale(.96); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@media (max-width: 640px) {
+  .mission-celebration { padding: 19px 22px 21px; }
+  .mission-celebration strong { font-size: 19px; }
+}
