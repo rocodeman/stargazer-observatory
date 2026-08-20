@@ -16,7 +16,8 @@ import {
 } from "@/lib/astronomy";
 
 const FEATURED = ["ori", "uma", "cas", "cyg", "sco", "leo", "gem", "tau", "lyr", "sgr", "and", "peg"];
-const DEFAULT_VISUAL_INTENSITY = "strong" as const;
+const DEFAULT_VISUAL_INTENSITY = "soft" as const;
+const INITIAL_CONSTELLATION_IDS = ["ori", "uma", "cas", "cyg", "sco", "leo", "gem", "tau"];
 const SCIENTIST_PROFILES = [
   { id: 0, scale: 1.05, lean: -18, bodyWidth: 38, bodyHeight: 48, arm: -28, leg: 18 },
   { id: 1, scale: .82, lean: 12, bodyWidth: 31, bodyHeight: 42, arm: 22, leg: -12 },
@@ -59,7 +60,7 @@ export default function Home() {
   const drag = useRef({ active: false, moved: false, x: 0, y: 0, yaw: 0, pitch: 0 });
   const [active, setActive] = useState("ori");
   const [showLines, setShowLines] = useState(true);
-  const [selectedConstellations, setSelectedConstellations] = useState<Set<string>>(() => new Set(SKY_DATA.constellations.map((item) => item.id)));
+  const [selectedConstellations, setSelectedConstellations] = useState<Set<string>>(() => new Set(INITIAL_CONSTELLATION_IDS));
   const [showNames, setShowNames] = useState(true);
   const [zoom, setZoom] = useState(1);
   const [yaw, setYaw] = useState(0.9);
