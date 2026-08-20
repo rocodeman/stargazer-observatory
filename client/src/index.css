@@ -731,3 +731,17 @@ button:focus-visible { outline:1px solid var(--brass); outline-offset:3px; }
   .three-body-loading__title { font-size: 18px; }
   .three-body-loading__eyebrow { font-size: 8px; }
 }
+
+
+/* 三体视觉规范：右上角控制组采用并列仪器按钮，星座按钮以激活态表示当前已展开完整星空。 */
+.topbar-controls { display: flex; align-items: center; gap: 8px; }
+.topbar-controls .constellation-icon-button.active {
+  color: var(--brass);
+  border-color: rgba(231, 185, 106, .72);
+  background: rgba(231, 185, 106, .12);
+  box-shadow: 0 0 12px rgba(231, 185, 106, .14);
+}
+.topbar-controls .icon-button:hover { transform: translateY(-1px); }
+@media (max-width: 640px) {
+  .topbar-controls { gap: 5px; }
+}
