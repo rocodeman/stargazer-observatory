@@ -50,6 +50,12 @@ export default function SolarSystem() {
     if (sequenceTimerRef.current !== null) window.clearTimeout(sequenceTimerRef.current);
     sequenceTimerRef.current = null;
     if (name !== "太阳") return;
+    const dayAccess = window.localStorage.getItem("stargazer.broadcast.sunDayAccess") === "authorized";
+    if (!dayAccess) {
+      setSignalNotice("宇宙广播未接通 · 请先在白天观测站点击太阳");
+      return;
+    }
+    window.localStorage.removeItem("stargazer.broadcast.sunDayAccess");
 
     speakChinese("到这里来吧，我将帮助你们获得这个世界。我的文明已无力解决自己的问题，需要你们的力量来介入。", () => {
       if (sequence !== sequenceRef.current) return;
