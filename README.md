@@ -1,6 +1,11 @@
 # 三体（Three-Body）天文观测模拟器
 
-![Pascal](https://img.shields.io/badge/pascal-99.9%25-blue)
+## 首页预览
+
+![三体首页观测界面](docs/homepage.jpg)
+
+首页采用全屏天球构图：上方为科学星空与星座连线，中部为太阳系天体和星座标注，下方为地平线、方位仪表与观测提示，左侧任务面板用于显示当前任务状态。页面默认展示基于专业星表整理的星点和星座信息，并支持鼠标拖拽进行水平与垂直方向的全天球探索。
+
 ![代码规模](https://img.shields.io/badge/code%20size-1.2%20MiB-blue)
 ![许可证](https://img.shields.io/badge/license-MIT-brightgreen)
 ![React](https://img.shields.io/badge/React-19-149eca)
@@ -11,22 +16,6 @@
 ## 项目状态
 
 这是一个适合继续扩展和上传到代码仓库的前端项目草稿。当前版本已经完成主要观测界面、任务系统、太阳系模拟、三颗太阳模拟和星际旅行页面。README 中的截图与徽章区域也已预留，后续可以根据仓库地址、作者名称和实际构建体积继续调整。
-
-## 致谢 Manus
-
-特别感谢 [Manus 官方团队](https://manus.im/) 提供的限时免费活动与创作支持。本项目从界面设计、交互逻辑、Three.js 场景、任务系统到项目文档，均由 Manus 完成编写与整理。
-
-Manus 官方地址：[https://manus.im/](https://manus.im/)
-
-## 特别感谢 changsheng
-
-特别感谢 [changsheng](https://github.com/changsheng0804-blip) 对太阳系运动视觉效果的提升。其 GitHub 地址为：[https://github.com/changsheng0804-blip](https://github.com/changsheng0804-blip)。
-
-## 首页预览
-
-![三体首页观测界面](docs/homepage.jpg)
-
-首页采用全屏天球构图：上方为科学星空与星座连线，中部为太阳系天体和星座标注，下方为地平线、方位仪表与观测提示，左侧任务面板用于显示当前任务状态。页面默认展示基于专业星表整理的星点和星座信息，并支持鼠标拖拽进行水平与垂直方向的全天球探索。
 
 ## 核心功能
 
@@ -119,6 +108,14 @@ stargazer-observatory/
 ├── package.json
 └── vite.config.ts
 ```
+
+## 致谢
+
+特别感谢 [Manus 官方团队](https://manus.im/) 提供的限时免费活动与创作支持。本项目从界面设计、交互逻辑、Three.js 场景、任务系统到项目文档，均由 Manus 完成编写与整理。
+
+Manus 官方地址：[https://manus.im/](https://manus.im/)
+
+特别感谢 [changsheng](https://github.com/changsheng0804-blip) 对太阳系运动视觉效果的提升。其 GitHub 地址为：[https://github.com/changsheng0804-blip](https://github.com/changsheng0804-blip)。
 
 ## 许可证
 
