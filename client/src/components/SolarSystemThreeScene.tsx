@@ -154,9 +154,10 @@ export default function SolarSystemThreeScene({ running, speed, onFocus }: Props
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 120);
 
     // ── Lighting ──────────────────────────────────────────────────────────────
-    const sunLight = new THREE.PointLight("#ffe9af", 5.2, 55, 1.2);
+    const sunLight = new THREE.PointLight("#ffe9af", 8.2, 80, 0.9);
     scene.add(sunLight);
-    scene.add(new THREE.AmbientLight("#3a5a70", 0.30));
+    scene.add(new THREE.HemisphereLight("#dcefff", "#101a26", 0.46));
+    scene.add(new THREE.AmbientLight("#5d7890", 0.42));
 
     // ── System root ───────────────────────────────────────────────────────────
     const system = new THREE.Group();
@@ -219,8 +220,12 @@ export default function SolarSystemThreeScene({ running, speed, onFocus }: Props
       pivot.position.x = def.orbitR;
 
       // Planet material
+      const bodyTexture = getTexture(def.textureMap);
       const mat = new THREE.MeshStandardMaterial({
-        map: getTexture(def.textureMap),
+        map: bodyTexture,
+        emissive: "#243746",
+        emissiveMap: bodyTexture,
+        emissiveIntensity: 0.12,
         roughness: 0.78,
         metalness: 0.02,
       });
@@ -286,7 +291,17 @@ export default function SolarSystemThreeScene({ running, speed, onFocus }: Props
         moonOrbit.rotation.y = Math.random() * Math.PI * 2;
         const moonMesh = new THREE.Mesh(
           new THREE.SphereGeometry(moonDef.size, 24, 16),
-          new THREE.MeshStandardMaterial({ map: getTexture(moonDef.textureMap), roughness: 0.9, metalness: 0 })
+          (() => {
+            const moonTexture = getTexture(moonDef.textureMap);
+            return new THREE.MeshStandardMaterial({
+              map: moonTexture,
+              emissive: "#273542",
+              emissiveMap: moonTexture,
+              emissiveIntensity: 0.10,
+              roughness: 0.9,
+              metalness: 0,
+            });
+          })()
         );
         moonMesh.userData = { name: moonDef.name };
         moonMesh.position.x = moonDef.orbitR;
