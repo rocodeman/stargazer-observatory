@@ -814,3 +814,54 @@ button:focus-visible { outline:1px solid var(--brass); outline-offset:3px; }
 
 /* 终局致谢：将协作者链接作为观测记录末行，保持低调但清晰可访问。 */
 .dark-forest-credit { display: block; margin-top: 7px; color: rgba(231, 185, 106, .62) !important; }
+
+
+/* 任务提示：按钮占据原 COMPLETE/ACTIVE 状态列，中央提示卡点击后关闭。 */
+.mission-hint-button {
+  min-width: 31px;
+  padding: 4px 5px;
+  border: 1px solid rgba(231, 185, 106, .42);
+  background: rgba(231, 185, 106, .07);
+  color: rgba(231, 185, 106, .82);
+  font: 500 8px 'Noto Sans SC', sans-serif;
+  letter-spacing: .04em;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+}
+.mission-hint-button:hover,
+.mission-hint-button:focus-visible { background: rgba(231, 185, 106, .18); color: var(--brass); transform: translateY(-1px); outline: none; }
+.mission-item.complete .mission-hint-button { border-color: rgba(163, 204, 193, .34); color: rgba(163, 204, 193, .72); background: rgba(163, 204, 193, .06); }
+.mission-hint-overlay {
+  position: fixed;
+  z-index: 15;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  border: 0;
+  background: rgba(1, 8, 13, .18);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+.mission-hint-card {
+  display: block;
+  width: min(480px, calc(100vw - 48px));
+  padding: 24px 28px 22px;
+  border: 1px solid rgba(231, 185, 106, .5);
+  background: linear-gradient(135deg, rgba(7, 24, 33, .94), rgba(3, 13, 21, .9));
+  box-shadow: 0 18px 55px rgba(0, 0, 0, .38), inset 0 0 0 1px rgba(163, 204, 193, .08);
+  backdrop-filter: blur(14px);
+  pointer-events: none;
+  text-align: center;
+}
+.mission-hint-card strong { display: block; color: var(--brass); font-size: 16px; font-weight: 600; letter-spacing: .12em; }
+.mission-hint-card p { margin: 15px 0 18px; color: rgba(226, 235, 226, .82); font-size: 14px; line-height: 1.9; }
+.mission-hint-card small { color: var(--teal); font: 500 9px 'IBM Plex Mono'; letter-spacing: .12em; }
+@media(max-width:800px){
+  .mission-hint-button { min-width: 28px; padding: 4px 3px; font-size: 7px; }
+  .mission-hint-card { padding: 20px 18px 18px; }
+  .mission-hint-card strong { font-size: 14px; }
+  .mission-hint-card p { font-size: 12px; line-height: 1.75; }
+}
