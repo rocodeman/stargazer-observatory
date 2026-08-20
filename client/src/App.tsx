@@ -4,8 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import Home from "./pages/Home";
 
+const Home = lazy(() => import("./pages/Home"));
 const Travel = lazy(() => import("./pages/Travel"));
 const SolarSystem = lazy(() => import("./pages/SolarSystem"));
 const SolarTriad = lazy(() => import("./pages/SolarTriad"));
