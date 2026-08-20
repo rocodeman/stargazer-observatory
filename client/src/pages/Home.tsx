@@ -120,6 +120,7 @@ export default function Home() {
     return fullData;
   };
   const scienceBoundaryComplete = scientistsFound.size === scientistTargets.length;
+  const allMissionsComplete = triadComplete && broadcastComplete && scienceBoundaryComplete && countdownComplete && shineComplete;
   const scientistNoticeTimer = useRef<number | null>(null);
   useEffect(() => {
     setVisualIntensity(DEFAULT_VISUAL_INTENSITY);
@@ -127,9 +128,12 @@ export default function Home() {
       window.sessionStorage.removeItem("stargazer.triad.returned");
       setTriadCelebration(true);
       setMeteorEnabled(true);
-      window.setTimeout(() => { setMeteorEnabled(false); setTriadCelebration(false); }, 5000);
+      window.setTimeout(() => { if (!allMissionsComplete) setMeteorEnabled(false); setTriadCelebration(false); }, 5000);
     }
-  }, []);
+  }, [allMissionsComplete]);
+  useEffect(() => {
+    if (allMissionsComplete) setMeteorEnabled(true);
+  }, [allMissionsComplete]);
   const toggleDayNight = () => setDayMode((mode) => !mode);
   const toggleVisualIntensity = () => {
     setVisualIntensity((mode) => {
@@ -174,14 +178,18 @@ export default function Home() {
       link.href = snapshot.toDataURL("image/png");
       link.click();
       window.localStorage.setItem("stargazer.task.countdown", "complete");
+      const wasAlreadyComplete = countdownComplete;
       setCountdownComplete(true);
-      setCelebration(true);
       setMeteorEnabled(true);
-      if (celebrationTimer.current) window.clearTimeout(celebrationTimer.current);
-      celebrationTimer.current = window.setTimeout(() => {
-        setMeteorEnabled(false);
-        setCelebration(false);
-      }, 10000);
+      if (!wasAlreadyComplete) {
+        setCelebration(true);
+        if (celebrationTimer.current) window.clearTimeout(celebrationTimer.current);
+        celebrationTimer.current = window.setTimeout(() => {
+          const allOtherMissionsComplete = triadComplete && broadcastComplete && scienceBoundaryComplete && shineComplete;
+          if (!allOtherMissionsComplete) setMeteorEnabled(false);
+          setCelebration(false);
+        }, 10000);
+      }
     } catch (error) {
       console.error("无法生成天文台截图", error);
     }
@@ -195,7 +203,7 @@ export default function Home() {
     if (scientistNoticeTimer.current) window.clearTimeout(scientistNoticeTimer.current);
     setScientistNotice(`发现科学家死亡 · ${next.size}/${scientistTargets.length}`);
     scientistNoticeTimer.current = window.setTimeout(() => setScientistNotice(""), 3000);
-    if (next.size === scientistTargets.length) {
+    if (next.size === scientistTargets.length && !scienceBoundaryComplete) {
       setScientistCelebration(true);
       window.setTimeout(() => setScientistCelebration(false), 3000);
     }
@@ -214,6 +222,7 @@ export default function Home() {
     setBroadcastComplete(false);
     setTriadComplete(false);
     setTriadCelebration(false);
+    setMeteorEnabled(false);
     setHighlightModeCount(0);
     setScientistsFound(new Set());
     setScientistNotice("");
@@ -502,9 +511,9 @@ export default function Home() {
       <section className="scene-hint"><Crosshair size={15} /><span>{isDragging ? "球面旋转中 · 探索天球" : "拖动以环视 3D 天球"}</span><button className={`intensity-toggle ${visualIntensity === "strong" ? "active" : ""}`} onClick={toggleVisualIntensity} aria-pressed={visualIntensity === "strong"}>{visualIntensity === "strong" ? "全部高亮" : "柔和显示"}</button></section>
       {scientistTargets.length > 0 && <div className="scientist-zone" aria-label="科学家遗留现场">{scientistTargets.filter((scientist) => !scientist.missionOnly && !scientistsFound.has(scientist.id)).map((scientist) => <button key={scientist.id} type="button" className="scientist-target" style={{ left: scientist.left, top: scientist.top, ["--scale" as string]: scientist.scale, ["--lean" as string]: `${scientist.lean}deg`, ["--body-width" as string]: `${scientist.bodyWidth}px`, ["--body-height" as string]: `${scientist.bodyHeight}px`, ["--arm" as string]: `${scientist.arm}deg`, ["--leg" as string]: `${scientist.leg}deg` }} onClick={() => discoverScientist(scientist.id)} aria-label="发现科学家"><span className="scientist-head" /><span className="scientist-body" /><span className="scientist-arm" /><span className="scientist-leg scientist-leg-one" /><span className="scientist-leg scientist-leg-two" /></button>)}</div>}
       {scientistNotice && <div className="scientist-notice" role="status">{scientistNotice}</div>}
-      {celebration && <div className="mission-celebration" role="status"><span className="celebration-kicker">MISSION COMPLETE</span><strong>恭喜，倒计时任务完成</strong></div>}
-      {scientistCelebration && <div className="mission-celebration science-celebration" role="status"><span className="celebration-kicker">MISSION COMPLETE</span><strong>恭喜，科学家的葬礼任务完成</strong></div>}
-      {triadCelebration && <div className="mission-celebration solar-triad-celebration" role="status"><span className="celebration-kicker">MISSION COMPLETE</span><strong>恭喜，三个太阳任务完成</strong></div>}
+      {celebration && <div className="mission-celebration" role="status"><span className="celebration-kicker">MISSION COMPLETE</span><strong>恭喜，倒计时已完成。不要回答。</strong></div>}
+      {scientistCelebration && <div className="mission-celebration science-celebration" role="status"><span className="celebration-kicker">MISSION COMPLETE</span><strong>恭喜。你找到了他们留下的最后坐标。</strong></div>}
+      {triadCelebration && <div className="mission-celebration solar-triad-celebration" role="status"><span className="celebration-kicker">MISSION COMPLETE</span><strong>恭喜。三个太阳已经看见你。</strong></div>}
       <footer className="bottom-bar"><div className="location"><Compass size={15} /><span>纬 {latitude.toFixed(2)}° · 经 {longitude.toFixed(2)}° · J2000</span></div><div className="azimuth-dial"><span className="dial-tick t1" /><span className="dial-tick t2" /><span className="dial-tick t3" /><span className="dial-needle" style={{ left: `${Math.max(3, Math.min(97, (azimuth / 360) * 100))}%` }} /><span className="dial-north">N</span><span className="dial-east">E</span><span className="dial-south">S</span><span className="dial-west">W</span></div><div className="footer-meta"><span><Moon size={14} /> 朔月 · 04:18</span><span className="divider" /><span>HYG / BSC</span></div></footer>
     </main>
   );

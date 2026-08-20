@@ -1,6 +1,16 @@
 /* Design philosophy: 三体 / Scientific Instrument Aesthetic. Real 3D planet materials sit inside a quiet, instrument-like viewport. */
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
+import { getTexture } from "@/lib/textureCache";
+
+const PLANET_TEXTURES: Record<string, string> = {
+  mercury: "/textures/mercury_surface.jpg",
+  venus: "/textures/venus_atmosphere.jpg",
+  mars: "/textures/mars_surface.jpg",
+  jupiter: "/textures/jupiter_surface.jpg",
+  saturn: "/textures/saturn_surface.jpg",
+};
+const SATURN_RING_TEXTURE = "/textures/saturn_ring.png";
 
 type Props = { planetId: string; color: string; onAnglesChange?: (yaw: number, pitch: number) => void };
 
@@ -60,12 +70,12 @@ export default function PlanetThreeScene({ planetId, color, onAnglesChange }: Pr
     mount.appendChild(renderer.domElement);
 
     const planetGroup = new THREE.Group();
-    const texture = makeSurfaceTexture(planetId, color);
+    const texture = planetId === "sun" ? makeSurfaceTexture(planetId, color) : getTexture(PLANET_TEXTURES[planetId] ?? PLANET_TEXTURES.mars);
     const material = new THREE.MeshStandardMaterial({ map: texture, roughness: planetId === "venus" ? .82 : .68, metalness: planetId === "sun" ? .1 : .02, emissive: planetId === "sun" ? new THREE.Color(color) : new THREE.Color("#000000"), emissiveIntensity: planetId === "sun" ? .65 : 0 });
     const sphere = new THREE.Mesh(new THREE.SphereGeometry(1.45, 96, 64), material);
     planetGroup.add(sphere);
     if (planetId === "saturn") {
-      const ring = new THREE.Mesh(new THREE.TorusGeometry(2.18, .13, 12, 96), new THREE.MeshStandardMaterial({ color: "#c6a873", roughness: .84, side: THREE.DoubleSide, transparent: true, opacity: .78, depthWrite: false }));
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(2.18, .13, 12, 96), new THREE.MeshStandardMaterial({ map: getTexture(SATURN_RING_TEXTURE), color: "#c6a873", roughness: .84, side: THREE.DoubleSide, transparent: true, opacity: .82, depthWrite: false }));
       ring.scale.y = .28;
       ring.rotation.x = Math.PI / 2.35;
       planetGroup.add(ring);
@@ -126,12 +136,12 @@ export default function PlanetThreeScene({ planetId, color, onAnglesChange }: Pr
           object.geometry?.dispose();
           if (Array.isArray(object.material)) {
             object.material.forEach((mat) => {
-              if ("map" in mat && mat.map) (mat.map as THREE.Texture).dispose();
+              if (planetId === "sun" && "map" in mat && mat.map) (mat.map as THREE.Texture).dispose();
               mat.dispose();
             });
           } else if (object.material) {
             const mat = object.material as THREE.Material & { map?: THREE.Texture };
-            if (mat.map) mat.map.dispose();
+            if (planetId === "sun" && mat.map) mat.map.dispose();
             mat.dispose();
           }
         }

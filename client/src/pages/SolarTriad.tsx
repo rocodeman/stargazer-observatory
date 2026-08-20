@@ -9,8 +9,9 @@ export default function SolarTriad() {
   const [speed, setSpeed] = useState(1);
 
   const returnToObservatory = () => {
+    const wasAlreadyComplete = window.localStorage.getItem("stargazer.task.threeSuns") === "complete";
     window.localStorage.setItem("stargazer.task.threeSuns", "complete");
-    window.sessionStorage.setItem("stargazer.triad.returned", "1");
+    if (!wasAlreadyComplete) window.sessionStorage.setItem("stargazer.triad.returned", "1");
     navigate("/");
   };
 
