@@ -19,6 +19,8 @@ export default function SolarSystem() {
   const sequenceRef = useRef(0);
   const [communicationText, setCommunicationText] = useState("");
   const [communicationPhase, setCommunicationPhase] = useState<"idle" | "receiving" | "waiting" | "warning" | "complete">("idle");
+  const [missionCelebration, setMissionCelebration] = useState(false);
+  const missionCelebrationTimerRef = useRef<number | null>(null);
 
   useEffect(() => () => {
     sequenceRef.current += 1;
@@ -26,12 +28,18 @@ export default function SolarSystem() {
     if (sequenceTimerRef.current !== null) window.clearTimeout(sequenceTimerRef.current);
     if (typingTimerRef.current !== null) window.clearInterval(typingTimerRef.current);
     if (audioContextRef.current) void audioContextRef.current.close();
+    if (missionCelebrationTimerRef.current !== null) window.clearTimeout(missionCelebrationTimerRef.current);
   }, []);
 
   const chooseContactResponse = (choice: "decline" | "answer") => {
     setContactChoice(choice);
     setContactDialogOpen(false);
-    if (choice === "answer") window.localStorage.setItem("stargazer.task.cosmicBroadcast", "complete");
+    if (choice === "answer") {
+      window.localStorage.setItem("stargazer.task.cosmicBroadcast", "complete");
+      setMissionCelebration(true);
+      if (missionCelebrationTimerRef.current !== null) window.clearTimeout(missionCelebrationTimerRef.current);
+      missionCelebrationTimerRef.current = window.setTimeout(() => setMissionCelebration(false), 3600);
+    }
   };
 
   const playTypingClick = (index: number) => {
@@ -140,6 +148,7 @@ export default function SolarSystem() {
       {communicationText && <div className={`solar-communication-readout ${communicationPhase}`} role="status" aria-live="polite"><div className="communication-readout-kicker">INCOMING TRANSMISSION · 文字转译</div><p>{communicationText}<span className="typing-cursor" aria-hidden="true" /></p></div>}
       {contactDialogOpen && <div className="contact-dialog-backdrop" role="presentation"><section className="contact-dialog" role="dialog" aria-modal="true" aria-labelledby="contact-dialog-title"><div className="contact-dialog-kicker">INCOMING DEEP-SPACE SIGNAL · α CENTAURI</div><h2 id="contact-dialog-title">是否回应这段来自宇宙的信号？</h2><p>通信窗口已打开。系统不会自动回答，请由你选择是否回应。</p><div className="contact-dialog-actions"><button type="button" className="contact-decline" onClick={() => chooseContactResponse("decline")}>不回答</button><button type="button" className="contact-answer" onClick={() => chooseContactResponse("answer")}>回答</button></div></section></div>}
       {contactChoice !== "none" && <div className="contact-choice-status" role="status">已选择：{contactChoice === "decline" ? "不回答" : "回答"} · 系统未自动发送任何内容</div>}
+      {missionCelebration && <div className="mission-celebration solar-broadcast-celebration" role="status"><span className="celebration-kicker">MISSION COMPLETE</span><strong>恭喜，宇宙广播任务完成</strong></div>}
       <div className="solar-system-stage"><SolarSystemThreeScene running={running} speed={speed} onFocus={handleFocus} /><div className="solar-system-caption"><span>当前聚焦</span><strong>{focus}</strong><small>拖拽旋转视角 · 滚轮缩放 · 点击行星查看</small></div></div>
       <aside className="solar-system-console">
         <div className="solar-console-kicker"><Gauge size={14} /> 太阳系 · 轨道观测</div>

@@ -162,7 +162,7 @@ export default function Home() {
   const toggleVisualIntensity = () => {
     setVisualIntensity((mode) => {
       const nextMode = mode === "strong" ? "soft" : "strong";
-      if (nextMode === "strong") {
+      if (nextMode === "strong" && !dayMode) {
         setHighlightModeCount((count) => {
           const nextCount = Math.min(3, count + 1);
           window.localStorage.setItem("stargazer.task.shineForYou.modeCount", String(nextCount));
