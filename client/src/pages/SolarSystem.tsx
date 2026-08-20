@@ -14,18 +14,40 @@ export default function SolarSystem() {
   const [contactChoice, setContactChoice] = useState<"none" | "decline" | "answer">("none");
   const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
   const sequenceTimerRef = useRef<number | null>(null);
+  const typingTimerRef = useRef<number | null>(null);
   const sequenceRef = useRef(0);
+  const [communicationText, setCommunicationText] = useState("");
+  const [communicationPhase, setCommunicationPhase] = useState<"idle" | "receiving" | "waiting" | "warning" | "complete">("idle");
 
   useEffect(() => () => {
     sequenceRef.current += 1;
     window.speechSynthesis.cancel();
     if (sequenceTimerRef.current !== null) window.clearTimeout(sequenceTimerRef.current);
+    if (typingTimerRef.current !== null) window.clearInterval(typingTimerRef.current);
   }, []);
 
   const chooseContactResponse = (choice: "decline" | "answer") => {
     setContactChoice(choice);
     setContactDialogOpen(false);
     if (choice === "answer") window.localStorage.setItem("stargazer.task.cosmicBroadcast", "complete");
+  };
+
+  const typeChinese = (text: string, sequence: number) => {
+    if (typingTimerRef.current !== null) window.clearInterval(typingTimerRef.current);
+    setCommunicationText("");
+    let index = 0;
+    typingTimerRef.current = window.setInterval(() => {
+      if (sequence !== sequenceRef.current) {
+        if (typingTimerRef.current !== null) window.clearInterval(typingTimerRef.current);
+        return;
+      }
+      index += 1;
+      setCommunicationText(text.slice(0, index));
+      if (index >= text.length && typingTimerRef.current !== null) {
+        window.clearInterval(typingTimerRef.current);
+        typingTimerRef.current = null;
+      }
+    }, 72);
   };
 
   const speakChinese = (text: string, onEnd: () => void) => {
@@ -41,6 +63,8 @@ export default function SolarSystem() {
   const handleFocus = (name: string) => {
     setFocus(name);
     setSignalNotice("");
+    setCommunicationText("");
+    setCommunicationPhase("idle");
     setContactDialogOpen(false);
     setContactChoice("none");
     sequenceRef.current += 1;
@@ -57,14 +81,20 @@ export default function SolarSystem() {
     }
     window.localStorage.removeItem("stargazer.broadcast.sunDayAccess");
 
+    setCommunicationPhase("receiving");
+    typeChinese("到这里来吧，我将帮助你们获得这个世界。我的文明已无力解决自己的问题，需要你们的力量来介入。", sequence);
     speakChinese("到这里来吧，我将帮助你们获得这个世界。我的文明已无力解决自己的问题，需要你们的力量来介入。", () => {
       if (sequence !== sequenceRef.current) return;
+      setCommunicationPhase("waiting");
       setSignalNotice("第一段通信已结束 · 等待 5 秒");
       sequenceTimerRef.current = window.setTimeout(() => {
         if (sequence !== sequenceRef.current) return;
+        setCommunicationPhase("warning");
         setSignalNotice("请注意：不要回答");
+        typeChinese("不要回答。不要回答。不要回答。", sequence);
         speakChinese("不要回答。不要回答。不要回答。", () => {
           if (sequence !== sequenceRef.current) return;
+          setCommunicationPhase("complete");
           setSignalNotice("");
           setContactDialogOpen(true);
         });
@@ -80,6 +110,7 @@ export default function SolarSystem() {
         <div className="solar-system-status"><span className={`status-dot ${running ? "" : "paused"}`} />{running ? "实时运行" : "已暂停"}</div>
       </header>
       {signalNotice && <div className="solar-signal-banner" role="status"><span className="signal-pulse" />{signalNotice}</div>}
+      {communicationText && <div className={`solar-communication-readout ${communicationPhase}`} role="status" aria-live="polite"><div className="communication-readout-kicker">INCOMING TRANSMISSION · 文字转译</div><p>{communicationText}<span className="typing-cursor" aria-hidden="true" /></p></div>}
       {contactDialogOpen && <div className="contact-dialog-backdrop" role="presentation"><section className="contact-dialog" role="dialog" aria-modal="true" aria-labelledby="contact-dialog-title"><div className="contact-dialog-kicker">INCOMING DEEP-SPACE SIGNAL · α CENTAURI</div><h2 id="contact-dialog-title">是否回应这段来自宇宙的信号？</h2><p>通信窗口已打开。系统不会自动回答，请由你选择是否回应。</p><div className="contact-dialog-actions"><button type="button" className="contact-decline" onClick={() => chooseContactResponse("decline")}>不回答</button><button type="button" className="contact-answer" onClick={() => chooseContactResponse("answer")}>回答</button></div></section></div>}
       {contactChoice !== "none" && <div className="contact-choice-status" role="status">已选择：{contactChoice === "decline" ? "不回答" : "回答"} · 系统未自动发送任何内容</div>}
       <div className="solar-system-stage"><SolarSystemThreeScene running={running} speed={speed} onFocus={handleFocus} /><div className="solar-system-caption"><span>当前聚焦</span><strong>{focus}</strong><small>拖拽旋转视角 · 滚轮缩放 · 点击行星查看</small></div></div>

@@ -424,3 +424,59 @@ button:focus-visible { outline:1px solid var(--brass); outline-offset:3px; }
 @media (max-width: 640px) {
   .brand-camera-button { width: 34px; height: 34px; }
 }
+
+/* Midnight Observatory additions: readable on-screen transcription keeps deep-space communication accessible without audio. */
+.solar-communication-readout {
+  position: fixed;
+  z-index: 24;
+  top: 96px;
+  left: 50%;
+  width: min(720px, calc(100vw - 40px));
+  transform: translateX(-50%);
+  padding: 14px 20px 17px;
+  border: 1px solid rgba(91, 183, 177, .48);
+  background: rgba(4, 16, 25, .84);
+  box-shadow: 0 14px 35px rgba(0, 0, 0, .26), inset 0 0 24px rgba(91, 183, 177, .06);
+  color: #e5f1eb;
+  pointer-events: none;
+}
+
+.communication-readout-kicker {
+  margin-bottom: 8px;
+  color: #8fd1c5;
+  font: 600 10px/1.2 "IBM Plex Mono", monospace;
+  letter-spacing: .16em;
+}
+
+.solar-communication-readout p {
+  margin: 0;
+  min-height: 28px;
+  color: #fff1bd;
+  font: 500 17px/1.7 "Noto Sans SC", sans-serif;
+  letter-spacing: .08em;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, .6);
+}
+
+.typing-cursor {
+  display: inline-block;
+  width: 7px;
+  height: 1.05em;
+  margin-left: 5px;
+  vertical-align: -.16em;
+  background: #e7b96a;
+  animation: transmission-cursor 780ms steps(1, end) infinite;
+}
+
+.solar-communication-readout.waiting p { color: #b8d7cf; }
+.solar-communication-readout.warning { border-color: rgba(231, 185, 106, .72); }
+.solar-communication-readout.warning p { color: #f3d58d; }
+
+@keyframes transmission-cursor {
+  0%, 48% { opacity: 1; }
+  49%, 100% { opacity: 0; }
+}
+
+@media (max-width: 640px) {
+  .solar-communication-readout { top: 82px; width: calc(100vw - 28px); padding: 12px 14px 14px; }
+  .solar-communication-readout p { font-size: 14px; line-height: 1.65; }
+}
