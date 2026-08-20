@@ -10,10 +10,14 @@ type Projected = Vec3 & { sx: number; sy: number; visible: boolean };
 
 const FEATURED = ["ori", "uma", "cas", "cyg", "sco", "leo", "gem", "tau", "lyr", "sgr", "and", "peg"];
 const DEFAULT_VISUAL_INTENSITY = "strong" as const;
-const SCIENTIST_TARGETS = [
-  { id: 0, label: "SCI-01", left: "18%", top: "36%" },
-  { id: 1, label: "SCI-02", left: "50%", top: "20%" },
-  { id: 2, label: "SCI-03", left: "78%", top: "42%" },
+const SCIENTIST_PROFILES = [
+  { id: 0, scale: 1.05, lean: -18, bodyWidth: 38, bodyHeight: 48, arm: -28, leg: 18 },
+  { id: 1, scale: .82, lean: 12, bodyWidth: 31, bodyHeight: 42, arm: 22, leg: -12 },
+  { id: 2, scale: 1.24, lean: 26, bodyWidth: 46, bodyHeight: 56, arm: 38, leg: 24 },
+];
+const SCIENTIST_SLOTS = [
+  { left: "16%", top: "34%" }, { left: "38%", top: "66%" }, { left: "57%", top: "30%" },
+  { left: "76%", top: "68%" }, { left: "86%", top: "36%" }, { left: "67%", top: "60%" },
 ];
 const STAR_COUNT = SKY_DATA.meta.starCount;
 const CONSTELLATION_COUNT = SKY_DATA.meta.constellationCount;
@@ -129,6 +133,10 @@ export default function Home() {
   const [celebration, setCelebration] = useState(false);
   const [scientistNotice, setScientistNotice] = useState("");
   const [scientistCelebration, setScientistCelebration] = useState(false);
+  const [scientistTargets] = useState(() => {
+    const shuffledSlots = [...SCIENTIST_SLOTS].sort(() => Math.random() - .5);
+    return SCIENTIST_PROFILES.map((profile, index) => ({ ...profile, ...shuffledSlots[index] }));
+  });
   const [scientistsFound, setScientistsFound] = useState<Set<number>>(() => {
     if (typeof window === "undefined") return new Set<number>();
     try { return new Set<number>(JSON.parse(window.localStorage.getItem("stargazer.task.scienceBoundary") || "[]")); } catch { return new Set<number>(); }
@@ -144,7 +152,7 @@ export default function Home() {
   const [broadcastComplete, setBroadcastComplete] = useState(() => typeof window !== "undefined" && window.localStorage.getItem("stargazer.task.cosmicBroadcast") === "complete");
   const [highlightModeCount, setHighlightModeCount] = useState(() => Math.min(3, Number(window.localStorage.getItem("stargazer.task.shineForYou.modeCount") || 0)));
   const shineComplete = highlightModeCount >= 3;
-  const scienceBoundaryComplete = scientistsFound.size === SCIENTIST_TARGETS.length;
+  const scienceBoundaryComplete = scientistsFound.size === scientistTargets.length;
   const scientistNoticeTimer = useRef<number | null>(null);
   useEffect(() => {
     setVisualIntensity(DEFAULT_VISUAL_INTENSITY);
@@ -213,7 +221,7 @@ export default function Home() {
     if (scientistNoticeTimer.current) window.clearTimeout(scientistNoticeTimer.current);
     setScientistNotice(`发现科学家死亡 · ${next.size}/3`);
     scientistNoticeTimer.current = window.setTimeout(() => setScientistNotice(""), 3000);
-    if (next.size === SCIENTIST_TARGETS.length) {
+    if (next.size === scientistTargets.length) {
       setScientistCelebration(true);
       window.setTimeout(() => setScientistCelebration(false), 3000);
     }
@@ -496,7 +504,7 @@ export default function Home() {
       <aside className="character-panel"><div className="character-profile"><div className="character-avatar"><CircleUserRound size={25} /></div><div><span>OBSERVATORY PILOT</span><strong>观测者</strong></div></div><div className="character-divider" /><div className="mission-panel-kicker"><Radio size={13} /> 任务 · 4</div><div className={`mission-item ${broadcastComplete ? "complete" : "incomplete"}`}><span className="mission-status">{broadcastComplete ? <CheckCircle2 size={16} /> : <span className="mission-ring" />}</span><div><strong>宇宙广播</strong><small>{broadcastComplete ? "已完成" : "未完成"}</small></div><em>{broadcastComplete ? "COMPLETE" : "ACTIVE"}</em></div><div className={`mission-item ${countdownComplete ? "complete" : "incomplete"}`}><span className="mission-status">{countdownComplete ? <CheckCircle2 size={16} /> : <span className="mission-ring" />}</span><div><strong>倒计时</strong><small>{countdownComplete ? "已完成" : "未完成"}</small></div><em>{countdownComplete ? "COMPLETE" : "ACTIVE"}</em></div><div className={`mission-item ${shineComplete ? "complete" : "incomplete"}`}><span className="mission-status">{shineComplete ? <CheckCircle2 size={16} /> : <span className="mission-ring" />}</span><div><strong>为你闪耀</strong><small>{shineComplete ? "已完成" : "未完成"}</small></div><em>{shineComplete ? "COMPLETE" : "ACTIVE"}</em></div><div className={`mission-item ${scienceBoundaryComplete ? "complete" : "incomplete"}`}><span className="mission-status">{scienceBoundaryComplete ? <CheckCircle2 size={16} /> : <span className="mission-ring" />}</span><div><strong>科学边界</strong><small>{scienceBoundaryComplete ? "已完成" : "未完成"}</small></div><em>{scienceBoundaryComplete ? "COMPLETE" : "ACTIVE"}</em></div><button type="button" className="mission-replay" onClick={replayMissions}><RotateCcw size={12} /> 重玩</button></aside>
       <header className="topbar"><div className="brand"><button className="brand-camera-button" onClick={captureObservatory} aria-label="拍摄天文台截图" title="拍摄天文台截图"><Camera size={18} /></button><div><div className="eyebrow">NIGHT OBSERVATORY · 3D SKY</div><h1>午夜天文台</h1></div></div><div className="status"><span className="status-dot" /> HYG v4.1 · {STAR_COUNT.toLocaleString()} STARS <b>·</b> {CONSTELLATION_COUNT} CONSTELLATIONS</div><button className="icon-button" onClick={toggleDayNight} aria-label={dayMode ? "切换到夜间观测" : "切换到白天观测"} title={dayMode ? "切换到夜间观测" : "切换到白天观测"}>{dayMode ? <Moon size={17} /> : <Sun size={17} />}</button></header>
       <section className="scene-hint"><Crosshair size={15} /><span>{isDragging ? "球面旋转中 · 探索天球" : "拖动以环视 3D 天球"}</span><kbd>ORBIT</kbd><button className={`intensity-toggle ${visualIntensity === "strong" ? "active" : ""}`} onClick={toggleVisualIntensity} aria-pressed={visualIntensity === "strong"}>{visualIntensity === "strong" ? "全部高亮" : "柔和显示"}</button></section>
-      {SCIENTIST_TARGETS.length > 0 && <div className="scientist-zone" aria-label="科学家遗留现场"><div className="scientist-zone-label">SCIENCE FRONTIER · 遗留现场</div>{SCIENTIST_TARGETS.map((scientist) => <button key={scientist.id} type="button" className={`scientist-target ${scientistsFound.has(scientist.id) ? "found" : ""}`} style={{ left: scientist.left, top: scientist.top }} onClick={() => discoverScientist(scientist.id)} aria-label={`发现${scientist.label}科学家`}><span className="scientist-head" /><span className="scientist-body" /><span className="scientist-tag">{scientist.label}</span></button>)}</div>}
+      {scientistTargets.length > 0 && <div className="scientist-zone" aria-label="科学家遗留现场">{scientistTargets.map((scientist) => <button key={scientist.id} type="button" className={`scientist-target ${scientistsFound.has(scientist.id) ? "found" : ""}`} style={{ left: scientist.left, top: scientist.top, ["--scale" as string]: scientist.scale, ["--lean" as string]: `${scientist.lean}deg`, ["--body-width" as string]: `${scientist.bodyWidth}px`, ["--body-height" as string]: `${scientist.bodyHeight}px`, ["--arm" as string]: `${scientist.arm}deg`, ["--leg" as string]: `${scientist.leg}deg` }} onClick={() => discoverScientist(scientist.id)} aria-label="发现科学家"><span className="scientist-head" /><span className="scientist-body" /><span className="scientist-arm" /><span className="scientist-leg scientist-leg-one" /><span className="scientist-leg scientist-leg-two" /></button>)}</div>}
       {scientistNotice && <div className="scientist-notice" role="status">{scientistNotice}</div>}
       {celebration && <div className="mission-celebration" role="status"><span className="celebration-kicker">MISSION COMPLETE</span><strong>恭喜，倒计时任务完成</strong></div>}
       {scientistCelebration && <div className="mission-celebration science-celebration" role="status"><span className="celebration-kicker">MISSION COMPLETE</span><strong>恭喜，科学边界任务完成</strong></div>}
