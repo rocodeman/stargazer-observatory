@@ -2,7 +2,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { Camera, CheckCircle2, CircleUserRound, Compass, Crosshair, LocateFixed, Moon, Radio, RotateCcw, Sun, Telescope } from "lucide-react";
-import html2canvas from "html2canvas";
 import { SKY_DATA } from "@/data/skyData";
 
 type Vec3 = { x: number; y: number; z: number };
@@ -195,6 +194,7 @@ export default function Home() {
   };
   const captureObservatory = async () => {
     try {
+      const html2canvas = (await import("html2canvas")).default;
       const snapshot = await html2canvas(document.documentElement, { backgroundColor: null, useCORS: true, logging: false, scale: Math.min(2, window.devicePixelRatio || 1), windowWidth: document.documentElement.scrollWidth, windowHeight: document.documentElement.scrollHeight });
       const stamp = new Date();
       const pad = (value: number) => String(value).padStart(2, "0");
