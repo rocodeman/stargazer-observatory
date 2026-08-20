@@ -384,3 +384,43 @@ button:focus-visible { outline:1px solid var(--brass); outline-offset:3px; }
   .mission-celebration { padding: 19px 22px 21px; }
   .mission-celebration strong { font-size: 19px; }
 }
+
+/* Midnight Observatory additions: the brand-side camera is the capture control; the top-right sun/moon control changes the entire sky instrument from night to day. */
+.brand-camera-button {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 1px solid rgba(231, 185, 106, .58);
+  border-radius: 50%;
+  background: rgba(6, 18, 27, .72);
+  color: #f3d58d;
+  cursor: pointer;
+  transition: color .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+.brand-camera-button:hover {
+  border-color: rgba(255, 241, 189, .95);
+  background: rgba(37, 54, 59, .78);
+  color: #fff1bd;
+  box-shadow: 0 0 22px rgba(231, 185, 106, .22);
+}
+
+.brand-camera-button:active { transform: scale(.96); }
+
+.observatory.day-mode .sky-shell,
+.observatory.day-mode .sky-canvas {
+  filter: saturate(.82) brightness(1.08);
+}
+
+.observatory.day-mode .milky-way { opacity: .14; }
+.observatory.day-mode .horizon-front { background: linear-gradient(180deg, rgba(139, 178, 184, .08), rgba(35, 62, 72, .76)); }
+.observatory.day-mode .topbar,
+.observatory.day-mode .bottom-bar,
+.observatory.day-mode .scene-hint { color: #e9f3ef; }
+.observatory.day-mode .icon-button { color: #fff1bd; border-color: rgba(255, 241, 189, .72); }
+
+@media (max-width: 640px) {
+  .brand-camera-button { width: 34px; height: 34px; }
+}
