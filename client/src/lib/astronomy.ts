@@ -24,9 +24,9 @@ export interface SolarObjectInstance extends SolarObjectDef {
 
 export const SOLAR_OBJECT_DEFS: SolarObjectDef[] = [
   { id: "sun", name: "太阳", latin: "SUN", color: "#ffd875", size: 5.5, baseRa: 0, baseDec: 0 },
-  { id: "virtual-sun-a", name: "曜灵", latin: "YAO-LING", color: "#ffd875", size: 5.5, baseRa: 10.8, baseDec: -8 },
-  { id: "virtual-sun-b", name: "烬环", latin: "JIN-HUAN", color: "#ffd875", size: 5.5, baseRa: 15.2, baseDec: 12 },
-  { id: "virtual-sun-c", name: "星烛", latin: "XING-ZHU", color: "#ffd875", size: 5.5, baseRa: 20.4, baseDec: 4 },
+  { id: "virtual-sun-a", name: "曜灵", latin: "YAO-LING", color: "#ffd875", size: 5.5, baseRa: 6.8, baseDec: -2 },
+  { id: "virtual-sun-b", name: "烬环", latin: "JIN-HUAN", color: "#ffd875", size: 5.5, baseRa: 7.8, baseDec: 3 },
+  { id: "virtual-sun-c", name: "星烛", latin: "XING-ZHU", color: "#ffd875", size: 5.5, baseRa: 8.8, baseDec: 7 },
   { id: "moon", name: "月球", latin: "MOON", color: "#d7e8e4", size: 4.2, baseRa: 3.2, baseDec: 8 },
   { id: "mercury", name: "水星", latin: "MERCURY", color: "#d1aa83", size: 2.8, baseRa: 4.7, baseDec: 18 },
   { id: "venus", name: "金星", latin: "VENUS", color: "#ffe3a0", size: 3.8, baseRa: 5.1, baseDec: 21 },
