@@ -225,6 +225,7 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
         manualChunks(id) {
@@ -236,6 +237,12 @@ export default defineConfig({
           }
           if (id.includes("node_modules/@radix-ui")) {
             return "ui-vendor";
+          }
+          if (id.includes("node_modules/recharts") || id.includes("node_modules/d3-")) {
+            return "chart-vendor";
+          }
+          if (id.includes("node_modules/html2canvas")) {
+            return "html2canvas-vendor";
           }
           if (id.includes("client/src/data/skyData.ts")) {
             return "sky-data";
