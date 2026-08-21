@@ -118,7 +118,7 @@ export default function Home() {
   const [countdownComplete, setCountdownComplete] = useState(() => typeof window !== "undefined" && window.localStorage.getItem("stargazer.task.countdown") === "complete");
   const [broadcastComplete, setBroadcastComplete] = useState(() => typeof window !== "undefined" && window.localStorage.getItem("stargazer.task.cosmicBroadcast") === "complete");
   const [triadComplete, setTriadComplete] = useState(() => typeof window !== "undefined" && window.localStorage.getItem("stargazer.task.threeSuns") === "complete");
-  const [highlightModeCount, setHighlightModeCount] = useState(() => Math.min(3, Number(window.localStorage.getItem("stargazer.task.shineForYou.modeCount") || 0)));
+  const [highlightModeCount, setHighlightModeCount] = useState(() => typeof window === "undefined" ? 0 : Math.min(3, Number(window.localStorage.getItem("stargazer.task.shineForYou.modeCount") || 0)));
   const shineComplete = highlightModeCount >= 3;
   const loadFullSkyData = async () => {
     if (fullDataLoaded) return skyData;
@@ -240,7 +240,7 @@ export default function Home() {
     setShowVirtualSuns(true);
   };
 
-  const stars = useMemo(() => skyData.stars.map((star) => ({ ...star, vector: toVector(star.ra, star.dec) })), []);
+  const stars = useMemo(() => skyData.stars.map((star) => ({ ...star, vector: toVector(star.ra, star.dec) })), [skyData.stars]);
   const byHr = useMemo(() => new Map(stars.map((star) => [star.hr, star])), [stars]);
   const current = skyData.constellations.find((item) => item.id === active) ?? skyData.constellations[0];
   const featured = FEATURED.map((id) => skyData.constellations.find((item) => item.id === id)).filter((item): item is typeof skyData.constellations[number] => Boolean(item));
