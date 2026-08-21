@@ -101,7 +101,11 @@ export default function Home() {
   const [scientistCelebration, setScientistCelebration] = useState(false);
   const [triadCelebration, setTriadCelebration] = useState(false);
   const [scientistTargets] = useState(() => {
-    const shuffledSlots = [...SCIENTIST_SLOTS].sort(() => Math.random() - .5);
+    const shuffledSlots = [...SCIENTIST_SLOTS];
+    for (let i = shuffledSlots.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledSlots[i], shuffledSlots[j]] = [shuffledSlots[j], shuffledSlots[i]];
+    }
     return SCIENTIST_PROFILES.map((profile, index) => ({ ...profile, ...shuffledSlots[index] }));
   });
   const [scientistsFound, setScientistsFound] = useState<Set<number>>(() => {
@@ -258,11 +262,10 @@ export default function Home() {
   useEffect(() => {
     if (timeRate === 0) return;
     const timer = window.setInterval(() => {
-      const next = new Date(new Date(observerDate).getTime() + timeRate * 60 * 1000);
-      setObserverDate(formatLocalInput(next));
+      setObserverDate((prev) => formatLocalInput(new Date(new Date(prev).getTime() + timeRate * 60 * 1000)));
     }, 1000);
     return () => window.clearInterval(timer);
-  }, [timeRate, observerDate]);
+  }, [timeRate]);
 
   useEffect(() => {
     if (!meteorEnabled) { setMeteors([]); return; }
