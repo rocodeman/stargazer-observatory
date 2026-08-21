@@ -101,7 +101,11 @@ export default function Home() {
   const [scientistCelebration, setScientistCelebration] = useState(false);
   const [triadCelebration, setTriadCelebration] = useState(false);
   const [scientistTargets] = useState(() => {
-    const shuffledSlots = [...SCIENTIST_SLOTS].sort(() => Math.random() - .5);
+    const shuffledSlots = [...SCIENTIST_SLOTS];
+    for (let i = shuffledSlots.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledSlots[i], shuffledSlots[j]] = [shuffledSlots[j], shuffledSlots[i]];
+    }
     return SCIENTIST_PROFILES.map((profile, index) => ({ ...profile, ...shuffledSlots[index] }));
   });
   const [scientistsFound, setScientistsFound] = useState<Set<number>>(() => {
@@ -118,7 +122,7 @@ export default function Home() {
   const [countdownComplete, setCountdownComplete] = useState(() => typeof window !== "undefined" && window.localStorage.getItem("stargazer.task.countdown") === "complete");
   const [broadcastComplete, setBroadcastComplete] = useState(() => typeof window !== "undefined" && window.localStorage.getItem("stargazer.task.cosmicBroadcast") === "complete");
   const [triadComplete, setTriadComplete] = useState(() => typeof window !== "undefined" && window.localStorage.getItem("stargazer.task.threeSuns") === "complete");
-  const [highlightModeCount, setHighlightModeCount] = useState(() => Math.min(3, Number(window.localStorage.getItem("stargazer.task.shineForYou.modeCount") || 0)));
+  const [highlightModeCount, setHighlightModeCount] = useState(() => typeof window === "undefined" ? 0 : Math.min(3, Number(window.localStorage.getItem("stargazer.task.shineForYou.modeCount") || 0)));
   const shineComplete = highlightModeCount >= 3;
   const loadFullSkyData = async () => {
     if (fullDataLoaded) return skyData;
@@ -240,7 +244,7 @@ export default function Home() {
     setShowVirtualSuns(true);
   };
 
-  const stars = useMemo(() => skyData.stars.map((star) => ({ ...star, vector: toVector(star.ra, star.dec) })), []);
+  const stars = useMemo(() => skyData.stars.map((star) => ({ ...star, vector: toVector(star.ra, star.dec) })), [skyData.stars]);
   const byHr = useMemo(() => new Map(stars.map((star) => [star.hr, star])), [stars]);
   const current = skyData.constellations.find((item) => item.id === active) ?? skyData.constellations[0];
   const featured = FEATURED.map((id) => skyData.constellations.find((item) => item.id === id)).filter((item): item is typeof skyData.constellations[number] => Boolean(item));
@@ -249,7 +253,10 @@ export default function Home() {
   const sidereal = useMemo(() => localSiderealHours(observationDate, longitude), [observationDate, longitude]);
   const solarObjects = useMemo(() => getSolarObjects(observationDate), [observationDate]);
   const query = search.trim().toLowerCase();
-  const searchResults = query ? [...skyData.constellations.map((item) => ({ id: item.id, name: item.name, latin: item.abbr, vector: normalize(item.points.map((hr) => byHr.get(hr)?.vector).filter((v): v is Vec3 => Boolean(v)).reduce<Vec3>((acc, v) => ({ x: acc.x + v.x, y: acc.y + v.y, z: acc.z + v.z }), { x: 0, y: 0, z: 0 })) })), ...solarObjects.map((item) => ({ id: item.id, name: item.name, latin: item.latin, vector: item.vector })), ...MESSIER_OBJECTS.map((item) => ({ id: item.id, name: item.name, latin: item.latin, vector: item.vector }))].filter((item) => `${item.name} ${item.latin}`.toLowerCase().includes(query)).slice(0, 8) : [];
+  const searchResults = useMemo(() => {
+    if (!query) return [];
+    return [...skyData.constellations.map((item) => ({ id: item.id, name: item.name, latin: item.abbr, vector: normalize(item.points.map((hr) => byHr.get(hr)?.vector).filter((v): v is Vec3 => Boolean(v)).reduce<Vec3>((acc, v) => ({ x: acc.x + v.x, y: acc.y + v.y, z: acc.z + v.z }), { x: 0, y: 0, z: 0 })) })), ...solarObjects.map((item) => ({ id: item.id, name: item.name, latin: item.latin, vector: item.vector })), ...MESSIER_OBJECTS.map((item) => ({ id: item.id, name: item.name, latin: item.latin, vector: item.vector }))].filter((item) => `${item.name} ${item.latin}`.toLowerCase().includes(query)).slice(0, 8);
+  }, [query, skyData.constellations, byHr, solarObjects]);
   const skyYaw = yaw + (sidereal / 24) * Math.PI * 2;
 
   useEffect(() => {
@@ -258,11 +265,10 @@ export default function Home() {
   useEffect(() => {
     if (timeRate === 0) return;
     const timer = window.setInterval(() => {
-      const next = new Date(new Date(observerDate).getTime() + timeRate * 60 * 1000);
-      setObserverDate(formatLocalInput(next));
+      setObserverDate((prev) => formatLocalInput(new Date(new Date(prev).getTime() + timeRate * 60 * 1000)));
     }, 1000);
     return () => window.clearInterval(timer);
-  }, [timeRate, observerDate]);
+  }, [timeRate]);
 
   useEffect(() => {
     if (!meteorEnabled) { setMeteors([]); return; }
@@ -335,7 +341,7 @@ export default function Home() {
       if (canvas.width !== Math.round(width * dpr) || canvas.height !== Math.round(height * dpr)) {
         canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr);
       }
-      const ctx = canvas.getContext("2d");
+      const ctx = canvas.getContext("2d", { willReadFrequently: false }) as CanvasRenderingContext2D | null;
       if (!ctx) return;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, width, height);
@@ -445,6 +451,8 @@ export default function Home() {
     };
   }, [stars, current, byHr, skyYaw, pitch, zoom, showLines, selectedConstellations, showNames, showSolar, showVirtualSuns, showMessier, solarObjects, environment, visualIntensity, dayMode]);
 
+  const dragFrame = useRef<number | null>(null);
+  const pendingDrag = useRef<{ dx: number; dy: number } | null>(null);
   const startDrag = (event: React.PointerEvent<HTMLDivElement>) => {
     event.currentTarget.setPointerCapture(event.pointerId);
     drag.current = { active: true, moved: false, x: event.clientX, y: event.clientY, yaw, pitch };
@@ -453,10 +461,22 @@ export default function Home() {
   const moveDrag = (event: React.PointerEvent<HTMLDivElement>) => {
     if (!drag.current.active) return;
     if (Math.abs(event.clientX - drag.current.x) + Math.abs(event.clientY - drag.current.y) > 5) drag.current.moved = true;
-    setYaw(drag.current.yaw - (event.clientX - drag.current.x) * 0.006);
-    setPitch(Math.max(-1.48, Math.min(1.48, drag.current.pitch + (event.clientY - drag.current.y) * 0.006)));
+    pendingDrag.current = { dx: event.clientX - drag.current.x, dy: event.clientY - drag.current.y };
+    if (dragFrame.current !== null) return;
+    dragFrame.current = requestAnimationFrame(() => {
+      dragFrame.current = null;
+      const pending = pendingDrag.current;
+      if (!pending) return;
+      setYaw(drag.current.yaw - pending.dx * 0.006);
+      setPitch(Math.max(-1.48, Math.min(1.48, drag.current.pitch + pending.dy * 0.006)));
+    });
   };
-  const stopDrag = () => { drag.current.active = false; setIsDragging(false); };
+  const stopDrag = () => {
+    if (dragFrame.current !== null) { cancelAnimationFrame(dragFrame.current); dragFrame.current = null; }
+    pendingDrag.current = null;
+    drag.current.active = false;
+    setIsDragging(false);
+  };
   const handleSkyClick = (event: React.PointerEvent<HTMLDivElement>) => {
     if (drag.current.moved) { drag.current.moved = false; return; }
     const canvas = canvasRef.current;

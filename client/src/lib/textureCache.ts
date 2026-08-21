@@ -6,15 +6,30 @@
 import * as THREE from "three";
 const loader = new THREE.TextureLoader();
 const cache = new Map<string, THREE.Texture>();
+const loading = new Map<string, THREE.Texture>();
 /**
  * Load a texture by path (relative to /public), caching the result.
  * Subsequent calls for the same path return the cached GPU texture immediately.
+ * Handles load errors and deduplicates concurrent requests.
  */
 export function getTexture(path: string): THREE.Texture {
   if (cache.has(path)) return cache.get(path)!;
-  const texture = loader.load(path);
+  if (loading.has(path)) return loading.get(path)!;
+  const texture = loader.load(
+    path,
+    () => {
+      loading.delete(path);
+      cache.set(path, texture);
+    },
+    undefined,
+    () => {
+      loading.delete(path);
+      cache.delete(path);
+      console.warn(`[textureCache] failed to load ${path}`);
+    }
+  );
   texture.colorSpace = THREE.SRGBColorSpace;
-  cache.set(path, texture);
+  loading.set(path, texture);
   return texture;
 }
 /**
@@ -24,5 +39,7 @@ export function getTexture(path: string): THREE.Texture {
  */
 export function disposeTextureCache(): void {
   cache.forEach((t) => t.dispose());
+  loading.forEach((t) => t.dispose());
   cache.clear();
+  loading.clear();
 }

@@ -26,6 +26,10 @@ export default function Travel() {
   const { planetId = "mars" } = useParams<{ planetId: string }>();
   const [, navigate] = useLocation();
   const [targetId, setTargetId] = useState(planetId);
+
+  useEffect(() => {
+    if (PLANETS[planetId] && planetId !== targetId) setTargetId(planetId);
+  }, [planetId]);
   const planet = PLANETS[targetId] ?? PLANETS.mars;
   const aiLogs = AI_LOGS[targetId] ?? AI_LOGS.mars;
   const [progress, setProgress] = useState(0);
@@ -63,7 +67,7 @@ export default function Travel() {
   };
   const stopOrbitDrag = () => { drag.current.active = false; };
   const resetOrbit = () => { setOrbitYaw(-12); setOrbitPitch(4); };
-  const changeTarget = (nextId: string) => { setTargetId(nextId); window.history.replaceState(null, "", `/travel/${nextId}`); setProgress(0); setArrived(false); setPaused(false); };
+  const changeTarget = (nextId: string) => { setTargetId(nextId); navigate(`/travel/${nextId}`, { replace: true }); setProgress(0); setArrived(false); setPaused(false); };
 
   return (
     <main className={`travel-page ${arrived ? "arrival-mode" : "cruise-mode"}`}>

@@ -99,6 +99,11 @@ export default function PlanetThreeScene({ planetId, color, onAnglesChange }: Pr
     const pointerMove = (event: PointerEvent) => { if (!angles.current.dragging) return; angles.current.yaw += (event.clientX - angles.current.x) * .42; angles.current.pitch = Math.max(-55, Math.min(55, angles.current.pitch - (event.clientY - angles.current.y) * .3)); angles.current.x = event.clientX; angles.current.y = event.clientY; callbackRef.current?.(angles.current.yaw, angles.current.pitch); };
     const pointerUp = () => { angles.current.dragging = false; };
     const wheel = (event: WheelEvent) => { event.preventDefault(); const minDistance = planetId === "sun" ? 7.2 : 3.2; const maxDistance = planetId === "sun" ? 11 : 7; angles.current.distance = Math.max(minDistance, Math.min(maxDistance, angles.current.distance + event.deltaY * .003)); };
+    mount.addEventListener("pointerdown", pointerDown);
+    mount.addEventListener("pointermove", pointerMove);
+    mount.addEventListener("pointerup", pointerUp);
+    mount.addEventListener("pointercancel", pointerUp);
+    mount.addEventListener("wheel", wheel, { passive: false });
     let isVisible = !document.hidden;
     const handleVisibilityChange = () => {
       isVisible = !document.hidden;

@@ -16,10 +16,13 @@ async function startServer() {
       ? path.resolve(__dirname, "public")
       : path.resolve(__dirname, "..", "dist", "public");
 
-  app.use(express.static(staticPath));
+  app.use(express.static(staticPath, { maxAge: "1y", etag: true, index: false }));
+  app.get("/assets/*", (_req, res) => {
+    res.status(404).send("Not found");
+  });
 
-  // Handle client-side routing - serve index.html for all routes
-  app.get("*", (_req, res) => {
+  // Handle client-side routing - serve index.html for all routes (express 4/5 compatible)
+  app.get("/*splat", (_req, res) => {
     res.sendFile(path.join(staticPath, "index.html"));
   });
 
