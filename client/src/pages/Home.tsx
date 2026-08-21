@@ -341,7 +341,7 @@ export default function Home() {
       if (canvas.width !== Math.round(width * dpr) || canvas.height !== Math.round(height * dpr)) {
         canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr);
       }
-      const ctx = canvas.getContext("2d");
+      const ctx = canvas.getContext("2d", { willReadFrequently: false }) as CanvasRenderingContext2D | null;
       if (!ctx) return;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, width, height);
@@ -451,6 +451,8 @@ export default function Home() {
     };
   }, [stars, current, byHr, skyYaw, pitch, zoom, showLines, selectedConstellations, showNames, showSolar, showVirtualSuns, showMessier, solarObjects, environment, visualIntensity, dayMode]);
 
+  const dragFrame = useRef<number | null>(null);
+  const pendingDrag = useRef<{ dx: number; dy: number } | null>(null);
   const startDrag = (event: React.PointerEvent<HTMLDivElement>) => {
     event.currentTarget.setPointerCapture(event.pointerId);
     drag.current = { active: true, moved: false, x: event.clientX, y: event.clientY, yaw, pitch };
@@ -459,10 +461,22 @@ export default function Home() {
   const moveDrag = (event: React.PointerEvent<HTMLDivElement>) => {
     if (!drag.current.active) return;
     if (Math.abs(event.clientX - drag.current.x) + Math.abs(event.clientY - drag.current.y) > 5) drag.current.moved = true;
-    setYaw(drag.current.yaw - (event.clientX - drag.current.x) * 0.006);
-    setPitch(Math.max(-1.48, Math.min(1.48, drag.current.pitch + (event.clientY - drag.current.y) * 0.006)));
+    pendingDrag.current = { dx: event.clientX - drag.current.x, dy: event.clientY - drag.current.y };
+    if (dragFrame.current !== null) return;
+    dragFrame.current = requestAnimationFrame(() => {
+      dragFrame.current = null;
+      const pending = pendingDrag.current;
+      if (!pending) return;
+      setYaw(drag.current.yaw - pending.dx * 0.006);
+      setPitch(Math.max(-1.48, Math.min(1.48, drag.current.pitch + pending.dy * 0.006)));
+    });
   };
-  const stopDrag = () => { drag.current.active = false; setIsDragging(false); };
+  const stopDrag = () => {
+    if (dragFrame.current !== null) { cancelAnimationFrame(dragFrame.current); dragFrame.current = null; }
+    pendingDrag.current = null;
+    drag.current.active = false;
+    setIsDragging(false);
+  };
   const handleSkyClick = (event: React.PointerEvent<HTMLDivElement>) => {
     if (drag.current.moved) { drag.current.moved = false; return; }
     const canvas = canvasRef.current;
